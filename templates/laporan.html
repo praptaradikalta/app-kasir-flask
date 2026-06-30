@@ -1,0 +1,31 @@
+<!-- templates/laporan.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KasirPro - Laporan</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/laporan.css') }}" />
+</head>
+<body>
+  <header class="mobile-nav">Laporan</header>
+
+  <main>
+    <section>
+      <h2>Ringkasan Laporan Penjualan</h2>
+      <p>Belum ada data penjualan.</p>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('produk.produk_list') }}">Produk</a>
+    <a href="{{ url_for('penjualan') }}">Penjualan</a>
+    <a href="{{ url_for('laporan') }}" class="active">Laporan</a>
+    <a href="{{ url_for('pengaturan') }}">Pengaturan</a>
+  </nav>
+  <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+
+</body>
+</html>

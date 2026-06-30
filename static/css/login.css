@@ -1,0 +1,241 @@
+:root {
+  --title-color: white; /* judul putih di tema terang */
+  --merah-gemuk: #c0392b;
+  --oranye: #f39c12;
+  /* Tema Merah - Default */
+  --bg1: #c0392b;
+  --bg2: #e74c3c; 
+  --bg3: #f39c12;
+  --card-bg: white;
+  --text: #000;
+  --btn: linear-gradient(90deg, #c0392b 0%, #e74c3c 60%, #f39c12 100%);
+  --link: #c0392b;
+}
+
+body.dark-mode {
+  
+  --bg1: #1a1a1a;
+  --bg2: #2c2c2c;
+  --bg3: #ccc7c7;
+  --card-bg: #2d2d2d;
+  --text: #fff;
+  --btn: linear-gradient(90deg, #444 0%, #666 100%);
+  --link: #66d9ef;
+  --input-border: #444;
+  --title-color: #fff; /* judul putih di dark */
+}
+
+
+body.hijau-mode {
+  /* Tema Hijau - Gradient tosca */
+  --bg1: #064e3b;
+  --bg2: #0a8a6b;
+  --bg3: #2ecc71;
+  --card-bg: #f0fffa;
+  --text: #064e3b;
+  --btn: linear-gradient(90deg, #0a8a6b 0%, #12a889 60%, #2ecc71 100%);
+  --link: #0a8a6b;
+  --title-color: white; /* judul putih di hijau */
+}
+
+
+body { 
+  margin: 0; 
+  height: 100vh; 
+  background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 60%, var(--bg3) 100%);
+  transition: background 0.4s ease;
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  font-family: 'Poppins', Arial, sans-serif; 
+  padding: 20px;
+  box-sizing: border-box; 
+}
+
+.theme-select {
+  margin-top: 25px;
+  text-align: center; /* ganti dari left jadi center */
+  width: 100%;
+  max-width: 340px; /* samain sama lebar card */
+  margin-left: auto;  /* biar center */
+  margin-right: auto;
+}
+
+.theme-select label {
+  font-size: 13px;
+  color: white; /* biar keliatan di background gradient */
+  margin-bottom: 5px;
+  display: block;
+  font-weight: 600;
+}
+
+
+#themeSelect {
+  width: 200px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  backdrop-filter: blur(5px);
+  text-align: center;
+
+  appearance: none; /* ilangin panah bawaan */
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 35px; /* kasih ruang buat panah */
+}
+
+
+#themeSelect option:checked,
+#themeSelect option:hover {
+  background: var(--bg2) !important; /* ikut warna tengah tema */
+  color: white;
+}
+
+/* Biar pas ditutup warnanya juga nyambung */
+.container {
+  animation: fadeIn 0.6s ease-in;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  color: white;  
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.logo-title {
+  
+  color: var(--title-color);
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 15px;
+  letter-spacing: 2px;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.logo-placeholder {
+  font-size: 28px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 15px;
+  letter-spacing: 2px;
+}
+
+h2 { 
+  margin-top: 60px;  /* kasih jarak dari atas */
+  margin-bottom: 30px; 
+  font-weight: bold;
+  color: white;
+  font-size: 22px;
+  letter-spacing: 1px;
+  text-align: center; /* jaga-jaga biar center */
+}
+
+.card { 
+  background: var(--card-bg); 
+  transition: all 0.4s ease;
+  padding: 35px 28px; 
+  border-radius: 30px; 
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25); 
+  width: 100%; 
+  text-align: left;
+  box-sizing: border-box;
+  max-width: 90%; /* biar responsive di HP kecil */
+  margin: 0 auto; /* center horizontal */
+}
+.card a { 
+  color: var(--link);
+}
+
+a { 
+  display: block; 
+  text-align: center; 
+  margin-top: 15px; 
+  font-size: 13px; 
+  color: var(--link);
+  text-decoration: none;
+  font-weight: 600;
+}
+a:hover { color: var(--link);}
+
+
+.card input {
+  border: 1.5px solid var(--input-border);
+  color: var(--text);
+  background: var(--card-bg);
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 20px 0;
+  border-radius: 15px;
+  box-sizing: border-box;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  transition: all 0.3s ease; /* biar halus */
+}
+
+.card input::placeholder {
+  color: var(--text);
+  opacity: 0.6;
+}
+
+.card input:focus {
+  border: 2px solid var(--link); /* warna tema */
+  box-shadow: 0 0 6px var(--link); /* glow efek */
+  outline: none;
+}
+
+.card button { 
+  background: var(--btn); 
+  width: 100%; 
+  height: 50px;
+  padding: 14px; 
+  border: none; 
+  border-radius: 15px; 
+  color: white; 
+  font-weight: bold; 
+  font-size: 17px; 
+  cursor: pointer; 
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  letter-spacing: 0.5px;
+}
+
+.card button:hover { 
+  background: linear-gradient(90deg, #a93226 0%, #d35400 100%);
+  transform: translateY(-2px);
+}
+
+.card label, h2 {
+  font-size: 15px;
+  color: var(--text);
+  font-weight: 700;
+}
+
+.password-box { 
+  position: relative; 
+  width: 100%; 
+}
+
+.toggle-eye { 
+  position: absolute; 
+  right: 16px; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  cursor: pointer; 
+  font-size: 20px; 
+  opacity: 0.6; 
+  user-select: none; 
+
+}
+
+.toggle-eye:hover { 
+  opacity: 1; 
+}
+

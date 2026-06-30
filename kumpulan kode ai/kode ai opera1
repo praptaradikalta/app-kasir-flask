@@ -1,0 +1,925 @@
+#dashboard versi website
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard dengan Sidebar Kiri</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg: #f5f7fb;
+      --panel: rgba(255,255,255,0.72);
+      --panel-solid: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: rgba(17,24,39,0.08);
+      --primary: #0f766e;
+      --primary-2: #14b8a6;
+      --accent: #f59e0b;
+      --danger: #dc2626;
+      --shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
+      --sidebar-w: 280px;
+    }
+
+    *{
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html{
+      scroll-behavior: smooth;
+    }
+
+    body{
+      font-family: "Plus Jakarta Sans", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(20,184,166,0.10), transparent 28%),
+        radial-gradient(circle at right bottom, rgba(245,158,11,0.10), transparent 22%),
+        linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .dashboard-shell{
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar{
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px 18px;
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,0.62);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      animation: slideInLeft .75s ease both;
+    }
+
+    .brand{
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 10px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand-mark{
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background:
+        linear-gradient(135deg, var(--primary), var(--primary-2));
+      position: relative;
+      box-shadow: 0 14px 30px rgba(20,184,166,0.28);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .brand-mark::before,
+    .brand-mark::after{
+      content:"";
+      position:absolute;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.28);
+    }
+
+    .brand-mark::before{
+      width: 70px;
+      height: 70px;
+      top: -32px;
+      left: -12px;
+    }
+
+    .brand-mark::after{
+      width: 26px;
+      height: 26px;
+      right: 8px;
+      bottom: 8px;
+      background: rgba(255,255,255,0.46);
+    }
+
+    .brand-text h1{
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.15rem;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-text p{
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .welcome-box{
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.72));
+      border: 1px solid rgba(255,255,255,0.7);
+      box-shadow: var(--shadow);
+      border-radius: 20px;
+      padding: 18px;
+      animation: fadeUp .8s ease both;
+      animation-delay: .08s;
+    }
+
+    .eyebrow{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--primary);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .eyebrow::before{
+      content:"";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(245,158,11,0.12);
+    }
+
+    .welcome-box h2{
+      font-size: 1rem;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .welcome-box span{
+      color: var(--primary);
+    }
+
+    .nav-group{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      animation: fadeUp .85s ease both;
+      animation-delay: .16s;
+    }
+
+    .nav-title{
+      font-size: .76rem;
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      color: var(--muted);
+      padding: 0 12px;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    .nav-link{
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: var(--text);
+      padding: 14px 14px;
+      border-radius: 16px;
+      font-weight: 600;
+      transition: .28s ease;
+      overflow: hidden;
+    }
+
+    .nav-link::before{
+      content:"";
+      position:absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(20,184,166,0.12), transparent 80%);
+      opacity: 0;
+      transition: .28s ease;
+    }
+
+    .nav-link:hover{
+      transform: translateX(6px);
+      background: rgba(255,255,255,0.72);
+      box-shadow: 0 10px 24px rgba(15,23,42,0.06);
+    }
+
+    .nav-link:hover::before{
+      opacity: 1;
+    }
+
+    .nav-link.active{
+      background: linear-gradient(90deg, rgba(15,118,110,0.16), rgba(20,184,166,0.06));
+      color: var(--primary);
+      box-shadow: inset 0 0 0 1px rgba(15,118,110,0.12);
+    }
+
+    .nav-link.active::after{
+      content:"";
+      position:absolute;
+      left: 0;
+      top: 12px;
+      bottom: 12px;
+      width: 4px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--primary), var(--primary-2));
+    }
+
+    .icon{
+      width: 22px;
+      height: 22px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 10px;
+      background: rgba(15,118,110,0.08);
+      color: var(--primary);
+      font-size: 13px;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+
+    .nav-link span{
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar-footer{
+      margin-top: auto;
+      animation: fadeUp .95s ease both;
+      animation-delay: .24s;
+    }
+
+    .logout-btn{
+      width: 100%;
+      border: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font: inherit;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, #ef4444, var(--danger));
+      box-shadow: 0 16px 28px rgba(220,38,38,0.22);
+      transition: .28s ease;
+    }
+
+    .logout-btn:hover{
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 20px 34px rgba(220,38,38,0.28);
+    }
+
+    .logout-btn:active{
+      transform: translateY(0) scale(.99);
+    }
+
+    .main-content{
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .topbar{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      animation: fadeUp .75s ease both;
+      animation-delay: .15s;
+    }
+
+    .topbar-left h2{
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(1.7rem, 2vw, 2.35rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    .topbar-left p{
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: .98rem;
+    }
+
+    .mobile-toggle{
+      display: none;
+      border: none;
+      background: var(--panel-solid);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .hero-panel{
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, #0f172a 0%, #102a43 42%, #0f766e 100%);
+      color: white;
+      border-radius: 30px;
+      padding: clamp(24px, 4vw, 40px);
+      min-height: 230px;
+      display: grid;
+      grid-template-columns: 1.3fr .8fr;
+      gap: 24px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+      animation: fadeUp .85s ease both;
+      animation-delay: .22s;
+    }
+
+    .hero-panel::before,
+    .hero-panel::after{
+      content:"";
+      position:absolute;
+      border-radius: 50%;
+      filter: blur(6px);
+      opacity: .4;
+    }
+
+    .hero-panel::before{
+      width: 240px;
+      height: 240px;
+      background: rgba(20,184,166,.28);
+      top: -60px;
+      right: -40px;
+    }
+
+    .hero-panel::after{
+      width: 180px;
+      height: 180px;
+      background: rgba(245,158,11,.18);
+      bottom: -70px;
+      left: 40%;
+    }
+
+    .hero-copy{
+      position: relative;
+      z-index: 1;
+      align-self: center;
+    }
+
+    .hero-copy h3{
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: .98;
+      letter-spacing: -0.05em;
+      max-width: 10ch;
+    }
+
+    .hero-copy p{
+      margin-top: 14px;
+      max-width: 52ch;
+      color: rgba(255,255,255,.78);
+      line-height: 1.7;
+    }
+
+    .hero-stats{
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 14px;
+      align-content: center;
+    }
+
+    .stat-block{
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 18px;
+      transition: .28s ease;
+    }
+
+    .stat-block:hover{
+      transform: translateY(-3px);
+      background: rgba(255,255,255,0.14);
+    }
+
+    .stat-label{
+      font-size: .86rem;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: rgba(255,255,255,.70);
+      font-weight: 700;
+    }
+
+    .stat-value{
+      margin-top: 8px;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(1.3rem, 2vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .content-grid{
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 24px;
+    }
+
+    .section-panel{
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.72);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+      border-radius: 26px;
+      padding: 24px;
+      animation: fadeUp .85s ease both;
+    }
+
+    .section-panel:nth-child(1){ animation-delay: .28s; }
+    .section-panel:nth-child(2){ animation-delay: .34s; }
+
+    .panel-head{
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .panel-head h4{
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: -0.03em;
+    }
+
+    .panel-head p{
+      margin-top: 6px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: .95rem;
+    }
+
+    .pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(15,118,110,0.08);
+      color: var(--primary);
+      font-size: .82rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .sales-form{
+      display: grid;
+      gap: 16px;
+    }
+
+    .field{
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label{
+      font-size: .92rem;
+      font-weight: 700;
+    }
+
+    .field input,
+    .field select,
+    .field textarea{
+      width: 100%;
+      border: 1px solid rgba(17,24,39,0.10);
+      background: rgba(255,255,255,0.82);
+      border-radius: 16px;
+      padding: 14px 16px;
+      font: inherit;
+      color: var(--text);
+      outline: none;
+      transition: .25s ease;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus{
+      border-color: rgba(15,118,110,0.34);
+      box-shadow: 0 0 0 4px rgba(20,184,166,0.10);
+      transform: translateY(-1px);
+    }
+
+    .field textarea{
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .two-cols{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .submit-btn{
+      margin-top: 8px;
+      border: none;
+      cursor: pointer;
+      border-radius: 18px;
+      padding: 15px 18px;
+      font: inherit;
+      font-weight: 800;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 18px 30px rgba(15,118,110,0.22);
+      transition: .28s ease;
+    }
+
+    .submit-btn:hover{
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 22px 38px rgba(15,118,110,0.28);
+    }
+
+    .submit-btn:active{
+      transform: translateY(0) scale(.99);
+    }
+
+    .quick-links{
+      display: grid;
+      gap: 14px;
+    }
+
+    .quick-item{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      text-decoration: none;
+      color: var(--text);
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(17,24,39,0.06);
+      transition: .28s ease;
+    }
+
+    .quick-item:hover{
+      transform: translateX(6px);
+      box-shadow: 0 16px 30px rgba(15,23,42,0.08);
+      border-color: rgba(15,118,110,0.14);
+    }
+
+    .quick-item strong{
+      display: block;
+      font-size: 1rem;
+    }
+
+    .quick-item small{
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: .84rem;
+    }
+
+    .arrow{
+      font-size: 1.2rem;
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .fade-in{
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .fade-in.visible{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .sidebar-backdrop{
+      display: none;
+    }
+
+    @keyframes fadeUp{
+      from{
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to{
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInLeft{
+      from{
+        opacity: 0;
+        transform: translateX(-34px);
+      }
+      to{
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @media (max-width: 1080px){
+      .hero-panel,
+      .content-grid{
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 860px){
+      .dashboard-shell{
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar{
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: min(86vw, 320px);
+        transform: translateX(-100%);
+        transition: transform .32s ease;
+        z-index: 1001;
+      }
+
+      .sidebar.open{
+        transform: translateX(0);
+      }
+
+      .sidebar-backdrop{
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(15,23,42,0.38);
+        opacity: 0;
+        pointer-events: none;
+        transition: .28s ease;
+        z-index: 1000;
+      }
+
+      .sidebar-backdrop.show{
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .mobile-toggle{
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .main-content{
+        padding: 20px;
+      }
+
+      .two-cols{
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px){
+      .topbar{
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .hero-panel,
+      .section-panel{
+        border-radius: 22px;
+      }
+
+      .main-content{
+        padding: 16px;
+      }
+
+      .hero-copy h3{
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="brand-text">
+          <h1>KasirPro</h1>
+          <p>Dashboard Admin</p>
+        </div>
+      </div>
+
+      <div class="welcome-box">
+        <div class="eyebrow">Admin Panel</div>
+        <h2>Selamat Datang, <span>admin</span> (admin)</h2>
+      </div>
+
+      <nav class="nav-group" aria-label="Menu utama">
+        <div class="nav-title">Navigasi</div>
+
+        <a href="#" class="nav-link active">
+          <span class="icon">⌂</span>
+          <span>Dashboard</span>
+        </a>
+
+        <a href="#" class="nav-link">
+          <span class="icon">▣</span>
+          <span>Produk</span>
+        </a>
+
+        <a href="#" class="nav-link">
+          <span class="icon">↗</span>
+          <span>Penjualan</span>
+        </a>
+
+        <a href="#" class="nav-link">
+          <span class="icon">◫</span>
+          <span>Laporan</span>
+        </a>
+
+        <a href="#" class="nav-link">
+          <span class="icon">⚙</span>
+          <span>Pengaturan</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="logout-btn">Logout</button>
+      </div>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <main class="main-content">
+      <header class="topbar fade-in">
+        <div class="topbar-left">
+          <h2>Dashboard</h2>
+          <p>Kelola produk, penjualan, laporan, dan pengaturan dari satu tempat.</p>
+        </div>
+
+        <button class="mobile-toggle" id="mobileToggle" aria-label="Buka menu">
+          ☰ Menu
+        </button>
+      </header>
+
+      <section class="hero-panel fade-in">
+        <div class="hero-copy">
+          <div class="eyebrow" style="color:#fbbf24;">Ringkasan Hari Ini</div>
+          <h3>Kontrol penuh untuk operasional toko Anda.</h3>
+          <p>
+            Sidebar ada di sebelah kiri untuk memudahkan akses cepat ke Dashboard, Produk,
+            Penjualan, Laporan, dan Pengaturan.
+          </p>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-block">
+            <div class="stat-label">Omzet Hari Ini</div>
+            <div class="stat-value">Rp 0</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-label">Cash di Laci</div>
+            <div class="stat-value">Rp 0</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <section class="section-panel fade-in">
+          <div class="panel-head">
+            <div>
+              <h4>Input Penjualan</h4>
+              <p>Form cepat untuk memasukkan transaksi penjualan baru.</p>
+            </div>
+            <div class="pill">Aktif</div>
+          </div>
+
+          <form class="sales-form">
+            <div class="two-cols">
+              <div class="field">
+                <label for="produk">Nama Produk</label>
+                <input type="text" id="produk" placeholder="Contoh: Kopi Susu" />
+              </div>
+
+              <div class="field">
+                <label for="kategori">Kategori</label>
+                <select id="kategori">
+                  <option>Pilih kategori</option>
+                  <option>Makanan</option>
+                  <option>Minuman</option>
+                  <option>Snack</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="two-cols">
+              <div class="field">
+                <label for="jumlah">Jumlah</label>
+                <input type="number" id="jumlah" placeholder="0" />
+              </div>
+
+              <div class="field">
+                <label for="harga">Harga</label>
+                <input type="text" id="harga" placeholder="Rp 0" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="catatan">Catatan</label>
+              <textarea id="catatan" placeholder="Tambahkan catatan transaksi jika diperlukan"></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">Simpan Penjualan</button>
+          </form>
+        </section>
+
+        <aside class="section-panel fade-in">
+          <div class="panel-head">
+            <div>
+              <h4>Akses Cepat</h4>
+              <p>Menu penting yang sering digunakan di dashboard.</p>
+            </div>
+            <div class="pill">5 Menu</div>
+          </div>
+
+          <div class="quick-links">
+            <a href="#" class="quick-item">
+              <div>
+                <strong>Dashboard</strong>
+                <small>Lihat ringkasan performa toko</small>
+              </div>
+              <span class="arrow">→</span>
+            </a>
+
+            <a href="#" class="quick-item">
+              <div>
+                <strong>Produk</strong>
+                <small>Kelola daftar dan stok produk</small>
+              </div>
+              <span class="arrow">→</span>
+            </a>
+
+            <a href="#" class="quick-item">
+              <div>
+                <strong>Penjualan</strong>
+                <small>Masukkan dan cek transaksi</small>
+              </div>
+              <span class="arrow">→</span>
+            </a>
+
+            <a href="#" class="quick-item">
+              <div>
+                <strong>Laporan</strong>
+                <small>Analisis data penjualan</small>
+              </div>
+              <span class="arrow">→</span>
+            </a>
+
+            <a href="#" class="quick-item">
+              <div>
+                <strong>Pengaturan</strong>
+                <small>Atur preferensi sistem</small>
+              </div>
+              <span class="arrow">→</span>
+            </a>
+          </div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const mobileToggle = document.getElementById('mobileToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+    mobileToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      sidebarBackdrop.classList.toggle('show');
+    });
+
+    sidebarBackdrop.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      sidebarBackdrop.classList.remove('show');
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

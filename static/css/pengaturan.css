@@ -1,0 +1,8 @@
+/* pengaturan.css */
+form label {
+  margin-top: 0.5rem;
+}
+
+form input[type="text"], form select {
+  max-width: 300px;
+}

@@ -1,0 +1,89 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KasirPro - Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <button id="menuToggle" class="menu-toggle" aria-label="Buka menu" aria-expanded="false" aria-controls="mobileDrawer">☰</button>
+    <h1 class="brand-title">Kasir MBL</h1>
+  </header>
+
+  <!-- Sidebar Desktop -->
+  <aside class="sidebar-desktop">
+    <div class="sidebar-head">
+      <h2>Kasir MBL</h2>
+      <p>Menu navigasi</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('dashboard') }}" class="active">Dashboard</a>
+      <a href="{{ url_for('produk.produk_list') }}">Produk</a>
+      <a href="{{ url_for('penjualan') }}">Penjualan</a>
+      <a href="{{ url_for('laporan') }}">Laporan</a>
+      <a href="{{ url_for('pengaturan') }}">Pengaturan</a>
+    </nav>
+  </aside>
+
+  <!-- Drawer Mobile -->
+  <aside id="mobileDrawer" class="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <h2>Kasir MBL</h2>
+      <p>Menu navigasi</p>
+    </div>
+
+    <nav class="drawer-nav">
+      <a href="{{ url_for('dashboard') }}" class="active">Dashboard</a>
+      <a href="{{ url_for('produk.produk_list') }}">Produk</a>
+      <a href="{{ url_for('penjualan') }}">Penjualan</a>
+      <a href="{{ url_for('laporan') }}">Laporan</a>
+      <a href="{{ url_for('pengaturan') }}">Pengaturan</a>
+    </nav>
+  </aside>
+
+  <div id="backdrop" class="backdrop"></div>
+
+  <main class="content">
+    <section class="summary-panel reveal">
+      <h2>Ringkasan Hari Ini</h2>
+
+      <div class="summary-grid">
+        <article class="metric-box">
+          <span class="metric-label">Omzet Hari Ini</span>
+          <strong id="omzet" class="metric-value">Rp 0</strong>
+        </article>
+
+        <article class="metric-box">
+          <span class="metric-label">Cash di Laci</span>
+          <strong id="cash" class="metric-value">Rp 0</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="quick-panel reveal">
+      <h2>Menu Cepat</h2>
+
+      <div class="quick-actions">
+        <a href="{{ url_for('dashboard') }}" class="quick-chip active">Dashboard</a>
+        <a href="{{ url_for('produk.produk_list') }}" class="quick-chip">Produk</a>
+        <a href="{{ url_for('penjualan') }}" class="quick-chip">Penjualan</a>
+        <a href="{{ url_for('laporan') }}" class="quick-chip">Laporan</a>
+        <a href="{{ url_for('pengaturan') }}" class="quick-chip">Pengaturan</a>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="{{ url_for('dashboard') }}" class="active">Dashboard</a>
+    <a href="{{ url_for('produk.produk_list') }}">Produk</a>
+    <a href="{{ url_for('penjualan') }}">Penjualan</a>
+    <a href="{{ url_for('laporan') }}">Laporan</a>
+    <a href="{{ url_for('pengaturan') }}">Pengaturan</a>
+  </nav>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

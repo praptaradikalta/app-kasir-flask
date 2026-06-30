@@ -1,0 +1,8 @@
+/* penjualan.css */
+form label {
+  margin-top: 0.5rem;
+}
+
+form input[type="number"] {
+  max-width: 200px;
+}

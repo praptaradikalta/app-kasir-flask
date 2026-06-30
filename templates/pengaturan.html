@@ -1,0 +1,43 @@
+<!-- templates/pengaturan.html -->
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KasirPro - Pengaturan</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pengaturan.css') }}" />
+</head>
+<body>
+  <header class="mobile-nav">Pengaturan</header>
+
+  <main>
+    <section>
+      <h2>Pengaturan Sistem</h2>
+      <form id="settingsForm" method="POST" action="#">
+        <label for="storeName">Nama Toko</label>
+        <input type="text" id="storeName" name="storeName" placeholder="Masukkan nama toko" />
+
+        <label for="currency">Mata Uang</label>
+        <select id="currency" name="currency">
+          <option value="IDR" selected>Rupiah (IDR)</option>
+          <option value="USD">Dollar (USD)</option>
+          <option value="EUR">Euro (EUR)</option>
+        </select>
+
+        <button type="submit">Simpan Pengaturan</button>
+      </form>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('produk.produk_list') }}">Produk</a>
+    <a href="{{ url_for('penjualan') }}">Penjualan</a>
+    <a href="{{ url_for('laporan') }}">Laporan</a>
+    <a href="{{ url_for('pengaturan') }}" class="active">Pengaturan</a>
+  </nav>
+  <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+
+</body>
+</html>

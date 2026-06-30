@@ -1,0 +1,33 @@
+/* Navigasi bawah (bottom navigation) */
+nav.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  background-color: #fffaf0; /* warna latar yang berbeda dari halaman */
+  border-top: 1px solid #d8ccb8;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+  display: flex;
+  justify-content: space-around;
+  padding: 0.5rem 0;
+  z-index: 100;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+nav.bottom-nav a {
+  flex-grow: 1;
+  text-align: center;
+  color: #6f6558; /* warna teks default */
+  padding: 0.5rem 0;
+  transition: color 0.3s ease;
+  border-top: 3px solid transparent; /* untuk animasi border */
+}
+
+nav.bottom-nav a:hover {
+  color: #1f6f57; /* warna saat hover */
+}
+
+nav.bottom-nav a.active {
+  color: #1f6f57; /* warna menu aktif */
+  border-top: 3px solid #1f6f57; /* border atas sebagai tanda aktif */
+}

@@ -1,0 +1,9 @@
+<!-- templates/user/edit.html -->
+<form method="POST">
+    {{ form.hidden_tag() }}
+    {{ form.username.label }} {{ form.username() }}
+    {{ form.password.label }} {{ form.password() }}
+    {{ form.role.label }} {{ form.role() }}
+    {{ form.nama_lengkap.label }} {{ form.nama_lengkap() }}
+    {{ form.submit() }}
+</form>

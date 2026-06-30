@@ -1,0 +1,24 @@
+/project
+    /app.py
+    /models
+        __init__.py
+        user.py
+    /routes
+        __init__.py
+        user.py
+    /templates
+        base.html
+        user
+            list.html
+            add.html
+            edit.html
+    /static
+        css
+        js
+    /forms
+        __init__.py
+        user.py
+    /instance
+        kasir.db
+    config.py
+    requirements.txt

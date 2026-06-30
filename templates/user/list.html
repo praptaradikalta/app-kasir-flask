@@ -1,0 +1,27 @@
+<!-- templates/user/list.html -->
+<a href="{{ url_for('user.user_add') }}" class="btn btn-primary">Tambah User</a>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Nama Lengkap</th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.role }}</td>
+            <td>{{ user.nama_lengkap }}</td>
+            <td>
+                <a href="{{ url_for('user.user_edit', id=user.id) }}">Edit</a>
+                <a href="{{ url_for('user.user_delete', id=user.id) }}">Hapus</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

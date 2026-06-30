@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Kasir MBL</title>
+ <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+ <link rel="stylesheet" href="{{ url_for('static', filename='css/produk.css') }}">
+</head>
+<body>
+ <header class="topbar">
+     <button id="menuToggle" class="menu-toggle">☰</button>
+     <h1 class="brand-title">Kasir MBL</h1>
+ </header>
+ <aside class="sidebar-desktop">
+     <nav class="sidebar-nav">
+         <a href="{{ url_for('dashboard') }}">Dashboard</a>
+         <a href="{{ url_for('produk.produk_list') }}">Produk</a>
+         <a href="{{ url_for('penjualan') }}">Penjualan</a>
+         <a href="{{ url_for('laporan') }}">Laporan</a>
+         <a href="{{ url_for('pengaturan') }}">Pengaturan</a>
+         
+     </nav>
+ </aside>
+ <main class="content">
+     {% block content %}{% endblock %}
+ </main>
+ <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

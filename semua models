@@ -1,0 +1,211 @@
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+from flask_login import UserMixin
+from flask_bcrypt import Bcrypt
+
+bcrypt = Bcrypt()
+db = SQLAlchemy()
+
+# 1. User - Kasir/Admin
+class User(db.Model, UserMixin):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password_hash = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), default='kasir')  # kasir, admin, owner
+    nama_lengkap = db.Column(db.String(100))
+    penjualan = db.relationship('Penjualan', backref='kasir', lazy=True)
+    buku_kas = db.relationship('BukuKas', backref='user', lazy=True)
+
+    def set_password(self, password):
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    def check_password(self, password):
+        return bcrypt.check_password_hash(self.password_hash, password)
+
+    def __init__(self, username, password, role='kasir', nama_lengkap=None):
+        self.username = username
+        self.set_password(password)
+        self.role = role
+        self.nama_lengkap = nama_lengkap
+
+    def __repr__(self):
+        return f'<User {self.username}>'
+
+# 2. Meja
+class Meja(db.Model):
+    __tablename__ = 'meja'
+    id = db.Column(db.Integer, primary_key=True)
+    nomor_meja = db.Column(db.String(20), unique=True, nullable=False)  # "1", "Teras 3"
+    status = db.Column(db.String(20), default='kosong')  # kosong, terisi, reserved
+    penjualan = db.relationship('Penjualan', backref='meja', lazy=True)
+
+    def __repr__(self):
+        return f'<Meja {self.nomor_meja}>'
+
+# 3. Customer
+class Customer(db.Model):
+    __tablename__ = 'customer'
+    id = db.Column(db.Integer, primary_key=True)
+    nama = db.Column(db.String(100), default='Umum')
+    no_hp = db.Column(db.String(20))
+    tipe = db.Column(db.String(20), default='dine_in')  # dine_in, take_away, delivery
+    penjualan = db.relationship('Penjualan', backref='customer', lazy=True)
+
+    def __repr__(self):
+        return f'<Customer {self.nama}>'
+
+# 4. Produk - Inti + flag konsinyasi
+class Produk(db.Model):
+    __tablename__ = 'produk'
+    id = db.Column(db.Integer, primary_key=True)
+    kode = db.Column(db.String(20), unique=True)
+    nama_produk = db.Column(db.String(100), nullable=False)
+    kategori = db.Column(db.String(30))  # makanan, minuman, jajanan
+    harga_jual = db.Column(db.Integer, nullable=False)
+    
+    # HPP logic
+    harga_beli = db.Column(db.Integer, default=0)  # HPP final per pcs/mangkok
+    harga_beli_supplier = db.Column(db.Integer, default=0)  # Khusus konsinyasi
+    is_konsinyasi = db.Column(db.Boolean, default=False)  # True = titip, False = beli/resep
+    
+    resep = db.relationship('Resep', backref='produk', uselist=False, lazy=True)
+    detail = db.relationship('PenjualanDetail', backref='produk', lazy=True)
+    stok = db.relationship('Stok', backref='produk', uselist=False, lazy=True)
+    
+    def update_hpp(self):
+        """Hitung HPP otomatis kalo ada resep"""
+        if self.kategori in ['makanan', 'minuman'] and self.resep and not self.is_konsinyasi:
+            total_hpp_batch = sum(
+                d.qty_pakai * d.bahan.harga_beli_terakhir 
+                for d in self.resep.detail
+            )
+            self.harga_beli = total_hpp_batch // self.resep.porsi_hasil
+            db.session.commit()
+
+    def __repr__(self):
+        return f'<Produk {self.nama_produk}>'
+
+
+# 5. Bahan Baku - Buat resep
+class BahanBaku(db.Model):
+    __tablename__ = 'bahan_baku'
+    id = db.Column(db.Integer, primary_key=True)
+    kode = db.Column(db.String(20), unique=True)
+    nama_bahan = db.Column(db.String(100), nullable=False)  # "Daging Giling"
+    satuan = db.Column(db.String(20))  # kg, liter, pcs
+    harga_beli_terakhir = db.Column(db.Integer, default=0)
+    stok = db.Column(db.Float, default=0)
+    detail_resep = db.relationship('ResepDetail', backref='bahan', lazy=True)
+
+    def __repr__(self):
+        return f'<BahanBaku {self.nama_bahan}>'
+
+# 6. Resep
+class Resep(db.Model):
+    __tablename__ = 'resep'
+    id = db.Column(db.Integer, primary_key=True)
+    produk_id = db.Column(db.Integer, db.ForeignKey('produk.id'), unique=True)
+    nama_resep = db.Column(db.String(100))
+    porsi_hasil = db.Column(db.Integer, default=1)  # 1 batch jadi brp porsi
+    detail = db.relationship('ResepDetail', backref='resep', lazy=True, cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Resep {self.nama_resep}>'
+
+# 7. Resep Detail / BOM
+class ResepDetail(db.Model):
+    __tablename__ = 'resep_detail'
+    id = db.Column(db.Integer, primary_key=True)
+    resep_id = db.Column(db.Integer, db.ForeignKey('resep.id'), nullable=False)
+    bahan_id = db.Column(db.Integer, db.ForeignKey('bahan_baku.id'), nullable=False)
+    qty_pakai = db.Column(db.Float, nullable=False)  # 2.5 kg
+
+    def __repr__(self):
+        return f'<ResepDetail {self.id}>'
+
+
+# 8. Stok - Gabung barang + bahan
+class Stok(db.Model):
+    __tablename__ = 'stok'
+    id = db.Column(db.Integer, primary_key=True)
+    produk_id = db.Column(db.Integer, db.ForeignKey('produk.id'), unique=True)
+    jumlah = db.Column(db.Float, default=0)
+    jenis_stok = db.Column(db.String(20), default='milik_sendiri')  # milik_sendiri, konsinyasi
+
+    def __repr__(self):
+        return f'<Stok {self.produk.nama_produk}>'
+
+# 9. Penjualan - Nota, status='belum_bayar' buat order dulu
+class Penjualan(db.Model):
+    __tablename__ = 'penjualan'
+    id = db.Column(db.Integer, primary_key=True)
+    tanggal = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    meja_id = db.Column(db.Integer, db.ForeignKey('meja.id'), nullable=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=True)
+    tipe_pesanan = db.Column(db.String(20))  # dine_in, take_away
+    total_bayar = db.Column(db.Integer, default=0)
+    bayar = db.Column(db.Integer, default=0)
+    kembalian = db.Column(db.Integer, default=0)
+    status = db.Column(db.String(20), default='belum_bayar')  # belum_bayar, lunas, hutang
+    detail = db.relationship('PenjualanDetail', backref='penjualan', lazy=True, cascade='all, delete-orphan')
+    buku_kas = db.relationship('BukuKas', backref='penjualan', uselist=False, lazy=True)
+
+    def __repr__(self):
+        return f'<Penjualan {self.id}>'
+
+
+# 10. Penjualan Detail
+class PenjualanDetail(db.Model):
+    __tablename__ = 'penjualan_detail'
+    id = db.Column(db.Integer, primary_key=True)
+    penjualan_id = db.Column(db.Integer, db.ForeignKey('penjualan.id'), nullable=False)
+    produk_id = db.Column(db.Integer, db.ForeignKey('produk.id'), nullable=False)
+    qty = db.Column(db.Integer, nullable=False)
+    harga_jual = db.Column(db.Integer)  # harga saat jual
+    catatan = db.Column(db.String(200))  # "Pedas, no seledri"
+    subtotal = db.Column(db.Integer)
+    laba = db.Column(db.Integer, default=0)  # Auto hitung: (harga_jual - hpp) * qty
+    
+    def hitung(self):
+        self.subtotal = self.qty * self.harga_jual
+        hpp = self.produk.harga_beli_supplier if self.produk.is_konsinyasi else self.produk.harga_beli
+        self.laba = (self.harga_jual - hpp) * self.qty
+
+    def __repr__(self):
+        return f'<PenjualanDetail {self.id}>'
+
+# 11. Buku Kas
+class BukuKas(db.Model):
+    __tablename__ = 'buku_kas'
+    id = db.Column(db.Integer, primary_key=True)
+    tanggal = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    penjualan_id = db.Column(db.Integer, db.ForeignKey('penjualan.id'), nullable=True)
+    jenis = db.Column(db.String(20))  # masuk, keluar
+    keterangan = db.Column(db.String(200))
+    jumlah = db.Column(db.Integer)
+
+    def __repr__(self):
+        return f'<BukuKas {self.id}>'
+
+# 12. Hutang Supplier - Khusus konsinyasi
+class HutangSupplier(db.Model):
+    __tablename__ = 'hutang_supplier'
+    id = db.Column(db.Integer, primary_key=True)
+    tanggal = db.Column(db.DateTime, default=datetime.utcnow)
+    produk_id = db.Column(db.Integer, db.ForeignKey('produk.id'), nullable=False)
+    penjualan_id = db.Column(db.Integer, db.ForeignKey('penjualan.id'), nullable=False)
+    supplier = db.Column(db.String(100))  # "Pak Supir Chitato"
+    qty_laku = db.Column(db.Integer)
+    total_hutang = db.Column(db.Integer)  # qty_laku * harga_beli_supplier
+    status = db.Column(db.String(20), default='belum_bayar')  # belum_bayar, lunas
+    produk = db.relationship('Produk', lazy=True)
+    penjualan = db.relationship('Penjualan', lazy=True)
+
+    def __repr__(self):
+        return f'<HutangSupplier {self.id}>'
+
+
+    

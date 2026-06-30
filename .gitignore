@@ -26,6 +26,13 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+#skip file kasir.db
+*.db
+kasir.db
+__pycache__/
+venv/
+.env
+
 # PyInstaller
 #   Usually these files are written by a python script from a template
 #   before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -216,3 +223,5 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+

@@ -1,52 +1,46 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} 
 {% block content %}
-
-<header class="mobile-nav">Produk</header>
+<header class="mobile-nav">Tambah Produk</header>
 <main>
-  
   <section class="card">
     <div class="form-container">
-      <h3>Tambah Produk Baru</h3>
-        <form method="POST" action="{{ url_for('produk.produk_list') }}">
-         <div class="form-grid"> 
-            <div class="form-group">    
+      <h3>Masukan Data Produk Baru</h3>
+      <form method="POST" action="{{ url_for('produk.tambah_produk') }}" enctype="multipart/form-data">
+        <div class="form-grid">
+          <div class="form-group">
             <label for="nama_produk">Nama Produk</label>
-            <input type="text" id="nama_produk" name="nama_produk" required
-                    value="{{ produk.nama_produk if produk is defined and produk else '' }}">
+            <input type="text" id="nama_produk" name="nama_produk" required>
 
             <label for="kategori">Kategori</label>
             <select id="kategori" name="kategori" required>
-                {% for kategori in kategoris %}
-                <option value="{{ kategori }}"
-                    {% if produk is defined and produk and produk.kategori == kategori %}selected{% endif %}>
-                    {{ kategori }}
-                </option>
-                {% endfor %}
+              {% for kategori in kategoris %}
+              <option value"{{ kategori }}" {% if produk and produk.kategori == kategori %}selected{% endif %}>
+                {{ kategori }}
+              </option>
+              {% endfor %}
             </select>
 
             <label for="harga_beli">Harga Beli</label>
-            <input type="number" id="harga_beli" name="harga_beli" min="0" required
-                    value="{{ produk.harga_beli if produk is defined and produk else '' }}">
+            <input type="number" id="harga_beli" name="harga_beli" min="0" required>
 
             <label for="harga_jual">Harga Jual</label>
-            <input type="number" id="harga_jual" name="harga_jual" min="0" required
-                    value="{{ produk.harga_jual if produk is defined and produk else '' }}">
+            <input type="number" id="harga_jual" name="harga_jual" min="0" required>
 
             <label for="stok">Stok</label>
-            <input type="number" id="stok" name="stok" min="0" step="1" required
-                    value="{{ stok if stok is defined else 0 }}">
+            <input type="number" id="stok" name="stok" min="0" step="1" required value="0">
 
             <label>
-                <input type="checkbox" name="is_konsinyasi" value="1"
-                {% if produk is defined and produk and produk.is_konsinyasi %}checked{% endif %}>
-                Konsinyasi (Titip)
+              <input type="checkbox" name="is_konsinyasi" value="1"> Konsinyasi (Titip)
             </label>
 
-            <button type="submit" class="btn-primary">Tambah Produk</button> 
-            </div>
-         </div>   
-        </form>
+            <label for="gambar">Foto Produk</label>
+            <input type="file" id="gambar" name="gambar" accept="image/*">
+            <img id="preview-gambar" style="max-width:150px; margin-top:8px; display:none;">
 
+            <button type="submit" class="btn-primary">Tambah Produk</button>
+          </div>
+        </div>
+      </form>
     </div>
   </section>
 </main>
@@ -58,9 +52,12 @@
   <a href="{{ url_for('pengaturan') }}">Pengaturan</a>
 </nav>
 <script>
-  document.getElementById('konsinyasiSelect').addEventListener('change', function() {
-    document.getElementById('hargaTitipGroup').style.display = this.value === '1' ? 'block' : 'none';
-  });
+  document.getElementById('gambar').onchange = e => {
+    const file = e.target.files[0];
+    if (file) {
+      document.getElementById('preview-gambar').src = URL.createObjectURL(file);
+      document.getElementById('preview-gambar').style.display = 'block';
+    }
+  };
 </script>
-<script src="{{ url_for('static', filename='js/menu.js') }}"></script>
 {% endblock %}

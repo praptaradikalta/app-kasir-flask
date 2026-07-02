@@ -1,4 +1,4 @@
-#model __init__.py
+# model/__init__.py
 from .user_model import User
 from .produk_model import Produk
 from .meja import Meja
@@ -12,5 +12,4 @@ from .bukukas import BukuKas
 from .resep import Resep
 from .hutang_supplier import HutangSupplier
 from .resep_detail import ResepDetail
-
-
+from .stok_harian_model import StokHarian

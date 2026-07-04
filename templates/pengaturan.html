@@ -31,11 +31,11 @@
   </main>
 
   <nav class="bottom-nav">
-    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
     <a href="{{ url_for('produk.produk_list') }}">Produk</a>
-    <a href="{{ url_for('penjualan') }}">Penjualan</a>
-    <a href="{{ url_for('laporan') }}">Laporan</a>
-    <a href="{{ url_for('pengaturan') }}" class="active">Pengaturan</a>
+    <a href="{{ url_for('penjualan.penjualan_list') }}">Penjualan</a>
+    <a href="{{ url_for('laporan.laporan_list') }}">Laporan</a>
+    <a href="{{ url_for('pengaturan.pengaturan_list') }}" class="active">Pengaturan</a>
   </nav>
   <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
 

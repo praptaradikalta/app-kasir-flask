@@ -9,3 +9,9 @@ class PenjualanDetail(db.Model):
     produk_id = db.Column(db.Integer, db.ForeignKey('produk.id'))
     qty = db.Column(db.Integer, nullable=False)
     harga_satuan = db.Column(db.Integer, nullable=False)
+
+
+# Di dalam class PenjualanDetail
+@property
+def subtotal(self):
+    return self.qty * self.harga_satuan

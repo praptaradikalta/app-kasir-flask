@@ -18,7 +18,32 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@produk.route('/produk/tambah', methods=['GET', 'POST'])
+@produk.route('/', methods=['GET'])
+@login_required
+def produk_list():
+    search = request.args.get('q', '')
+    kategori_filter = request.args.get('kategori', 'Semua')
+
+    query = Produk.query
+    if search:
+        query = query.filter(Produk.nama_produk.ilike(f'%{search}%'))
+    if kategori_filter != 'Semua':
+        query = query.filter_by(kategori=kategori_filter)
+
+    produk_per_kategori = {}
+    for k in KategoriEnum:
+        list_produk = query.filter_by(kategori=k.value).all()
+        if list_produk:
+            produk_per_kategori[k.value] = list_produk
+
+    return render_template('produk/list_produk.html', 
+        produk_per_kategori=produk_per_kategori,
+        search=search,
+        kategori_filter=kategori_filter,
+        kategoris=['Semua'] + [k.value for k in KategoriEnum]
+    )
+
+@produk.route('/tambah', methods=['GET', 'POST'])
 @login_required
 def tambah_produk():
     kategoris = [kategori.value for kategori in KategoriEnum]
@@ -74,7 +99,7 @@ def tambah_produk():
             db.session.rollback()
             flash(f'Error saat menyimpan produk: {e}', 'error')
         return redirect(url_for('produk.produk_list'))
-    return render_template('produk/add_produk.html', kategoris=kategoris)
+    return render_template('/add_produk.html', kategoris=kategoris)
 
 # update edit_produk juga biar bisa ganti gambar
 @produk.route('/edit/<int:id>', methods=['GET', 'POST'])
@@ -109,31 +134,6 @@ def edit_produk(id):
             flash(f'Error saat update produk: {e}', 'error')
         return redirect(url_for('produk.produk_list'))
     return render_template('produk/edit_produk.html', produk=produk, kategoris=kategoris, stok=stok_obj.jumlah if stok_obj else 0)
-
-@produk.route('/produk', methods=['GET'])
-@login_required
-def produk_list():
-    search = request.args.get('q', '')
-    kategori_filter = request.args.get('kategori', 'Semua')
-
-    query = Produk.query
-    if search:
-        query = query.filter(Produk.nama_produk.ilike(f'%{search}%'))
-    if kategori_filter != 'Semua':
-        query = query.filter_by(kategori=kategori_filter)
-
-    produk_per_kategori = {}
-    for k in KategoriEnum:
-        list_produk = query.filter_by(kategori=k.value).all()
-        if list_produk:
-            produk_per_kategori[k.value] = list_produk
-
-    return render_template('produk/list_produk.html', 
-        produk_per_kategori=produk_per_kategori,
-        search=search,
-        kategori_filter=kategori_filter,
-        kategoris=['Semua'] + [k.value for k in KategoriEnum]
-    )
 
 @produk.route('/hapus/<int:id>')
 @login_required

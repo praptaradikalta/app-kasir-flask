@@ -2,6 +2,6 @@
 from flask import Blueprint, render_template
 laporan = Blueprint('laporan', __name__)
 
-@laporan.route('/laporan')
+@laporan.route('/')
 def laporan_list():
     return render_template('laporan.html')

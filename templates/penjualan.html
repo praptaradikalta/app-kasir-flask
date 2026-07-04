@@ -1,36 +1,33 @@
-<!-- templates/penjualan.html -->
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KasirPro - Penjualan</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/penjualan.css') }}" />
-</head>
-<body>
-  <header class="mobile-nav">Penjualan</header>
+{% extends 'base.html' %}
 
-  <main>
-    <section>
-      <h2>Input Penjualan Aktif</h2>
-      <form id="salesForm" method="POST" action="{{ url_for('input_penjualan') }}">
-        <label for="total">Total Bayar</label>
-        <input type="number" id="total" name="total" min="0" required />
+{% block title %}Daftar Penjualan - Kasir MBL{% endblock %}
 
-        <button type="submit">Simpan Penjualan</button>
-      </form>
-    </section>
-  </main>
-
-  <nav class="bottom-nav">
-    <a href="{{ url_for('dashboard') }}">Dashboard</a>
-    <a href="{{ url_for('produk.produk_list') }}">Produk</a>
-    <a href="{{ url_for('penjualan') }}" class="active">Penjualan</a>
-    <a href="{{ url_for('laporan') }}">Laporan</a>
-    <a href="{{ url_for('pengaturan') }}">Pengaturan</a>
-  </nav>
-  <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
-
-</body>
-</html>
+{% block content %}
+<div class="container">
+  <h2>Daftar Penjualan</h2>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tanggal</th>
+        <th>User</th>
+        <th>Meja</th>
+        <th>Total Bayar</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in penjualan %}
+      <tr>
+        <td>{{ p[0] }}</td>
+        <td>{{ p[1] }}</td>
+        <td>{{ p[2] }}</td>
+        <td>{{ p[3] }}</td>
+        <td>Rp {{ p[6] }}</td>
+        <td>{{ p[9] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

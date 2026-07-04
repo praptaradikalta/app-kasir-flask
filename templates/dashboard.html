@@ -21,11 +21,13 @@
     </div>
 
     <nav class="sidebar-nav">
-      <a href="{{ url_for('dashboard') }}" class="active">Dashboard</a>
+      <h3>Halo, {{ user.nama_lengkap }}</h3>
+
+      <a href="{{ url_for('user.dashboard') }}" class="active">Dashboard</a>
       <a href="{{ url_for('produk.produk_list') }}">Produk</a>
-      <a href="{{ url_for('penjualan') }}">Penjualan</a>
-      <a href="{{ url_for('laporan') }}">Laporan</a>
-      <a href="{{ url_for('pengaturan') }}">Pengaturan</a>
+      <a href="{{ url_for('penjualan.penjualan_list') }}">Penjualan</a>
+      <a href="{{ url_for('laporan.laporan_list') }}">Laporan</a>
+      <a href="{{ url_for('pengaturan.pengaturan_list') }}">Pengaturan</a>
     </nav>
   </aside>
 
@@ -37,11 +39,11 @@
     </div>
 
     <nav class="drawer-nav">
-      <a href="{{ url_for('dashboard') }}" class="active">Dashboard</a>
+      <a href="{{ url_for('user.dashboard') }}" class="active">Dashboard</a>
       <a href="{{ url_for('produk.produk_list') }}">Produk</a>
-      <a href="{{ url_for('penjualan') }}">Penjualan</a>
-      <a href="{{ url_for('laporan') }}">Laporan</a>
-      <a href="{{ url_for('pengaturan') }}">Pengaturan</a>
+      <a href="{{ url_for('penjualan.penjualan_list') }}">Penjualan</a>
+      <a href="{{ url_for('laporan.laporan_list') }}">Laporan</a>
+      <a href="{{ url_for('pengaturan.pengaturan_list') }}">Pengaturan</a>
     </nav>
   </aside>
 
@@ -68,21 +70,21 @@
       <h2>Menu Cepat</h2>
 
       <div class="quick-actions">
-        <a href="{{ url_for('dashboard') }}" class="quick-chip active">Dashboard</a>
+        <a href="{{ url_for('user.dashboard') }}" class="quick-chip active">Dashboard</a>
         <a href="{{ url_for('produk.produk_list') }}" class="quick-chip">Produk</a>
-        <a href="{{ url_for('penjualan') }}" class="quick-chip">Penjualan</a>
-        <a href="{{ url_for('laporan') }}" class="quick-chip">Laporan</a>
-        <a href="{{ url_for('pengaturan') }}" class="quick-chip">Pengaturan</a>
+        <a href="{{ url_for('penjualan.penjualan_list') }}" class="quick-chip">Penjualan</a>
+        <a href="{{ url_for('laporan.laporan_list') }}" class="quick-chip">Laporan</a>
+        <a href="{{ url_for('pengaturan.pengaturan_list') }}" class="quick-chip">Pengaturan</a>
       </div>
     </section>
   </main>
 
   <nav class="bottom-nav">
-    <a href="{{ url_for('dashboard') }}" class="active">Dashboard</a>
+    <a href="{{ url_for('user.dashboard') }}" class="active">Dashboard</a>
     <a href="{{ url_for('produk.produk_list') }}">Produk</a>
-    <a href="{{ url_for('penjualan') }}">Penjualan</a>
-    <a href="{{ url_for('laporan') }}">Laporan</a>
-    <a href="{{ url_for('pengaturan') }}">Pengaturan</a>
+    <a href="{{ url_for('penjualan.penjualan_list') }}">Penjualan</a>
+    <a href="{{ url_for('laporan.laporan_list') }}">Laporan</a>
+    <a href="{{ url_for('pengaturan.pengaturan_list') }}">Pengaturan</a>
   </nav>
   <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>

@@ -45,11 +45,11 @@
   </section>
 </main>
 <nav class="bottom-nav">
-  <a href="{{ url_for('dashboard') }}">Dashboard</a>
+  <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
   <a href="{{ url_for('produk.produk_list') }}" class="active">Produk</a>
-  <a href="{{ url_for('penjualan') }}">Penjualan</a>
-  <a href="{{ url_for('laporan') }}">Laporan</a>
-  <a href="{{ url_for('pengaturan') }}">Pengaturan</a>
+  <a href="{{ url_for('penjualan.penjualan_list') }}">Penjualan</a>
+  <a href="{{ url_for('laporan.laporan_list') }}">Laporan</a>
+  <a href="{{ url_for('pengaturan.pengaturan_list') }}">Pengaturan</a>
 </nav>
 <script>
   document.getElementById('gambar').onchange = e => {

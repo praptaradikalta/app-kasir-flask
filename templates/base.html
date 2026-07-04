@@ -1,31 +1,78 @@
-#kode base.html
 <!DOCTYPE html>
 <html lang="id">
 <head>
- <meta charset="UTF-8">
- <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <title>Kasir MBL</title>
- <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
- <link rel="stylesheet" href="{{ url_for('static', filename='css/produk.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kasir UKM{% endblock %}</title>
+
+    <!-- 1. Bootstrap CSS (Fondasi Layout) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    
+    <!-- 2. FontAwesome (Untuk Ikon Navbar) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- 3. CSS KUSTOM ANDA (Untuk Gaya Visual Unik) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/produk.css') }}">
+
+    <style>
+        /* Pengaturan tambahan agar konten tidak tertutup navbar bawah */
+        body {
+            padding-bottom: 80px; 
+            background-color: #f8f9fa;
+        }
+        .navbar-bottom-custom {
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-link {
+            color: #6c757d !important;
+        }
+        .nav-link.active {
+            color: #0d6efd !important;
+        }
+    </style>
 </head>
 <body>
- <header class="topbar">
-     <button id="menuToggle" class="menu-toggle">☰</button>
-     <h1 class="brand-title">Kasir MBL</h1>
- </header>
- <aside class="sidebar-desktop">
-     <nav class="sidebar-nav">
-         <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
-         <a href="{{ url_for('produk.produk_list') }}">Produk</a>
-         <a href="{{ url_for('penjualan.penjualan_list') }}">Penjualan</a>
-         <a href="{{ url_for('laporan.laporan_list') }}">Laporan</a>
-         <a href="{{ url_for('pengaturan.pengaturan_list') }}">Pengaturan</a>
-         
-     </nav>
- </aside>
- <main class="content">
-     {% block content %}{% endblock %}
- </main>
- <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+    <!-- Area Konten Utama Dinamis -->
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Navbar Bottom yang Konsisten (Mobile & Desktop) -->
+    <nav class="navbar fixed-bottom navbar-light bg-white border-top navbar-expand navbar-bottom-custom">
+        <ul class="navbar-nav nav-justified w-100">
+            <li class="nav-item">
+                <a class="nav-link text-center" href="{{ url_for('penjualan.buat_order') }}">
+                    <i class="fas fa-shopping-cart d-block mb-1"></i>
+                    <span class="small">Order</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-center" href="/">
+                    <i class="fas fa-th-large d-block mb-1"></i>
+                    <span class="small">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-center" href="{{ url_for('produk.list_produk') }}">
+                    <i class="fas fa-box d-block mb-1"></i>
+                    <span class="small">Produk</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-center" href="#">
+                    <i class="fas fa-user d-block mb-1"></i>
+                    <span class="small">Profil</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- 4. JS Bootstrap (Wajib untuk komponen interaktif seperti Modal) -->
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    
+    <!-- Script Kustom Anda jika ada -->
+    {% block scripts %}{% endblock %}
 </body>
 </html>

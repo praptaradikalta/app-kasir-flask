@@ -1,65 +1,320 @@
-{% extends 'base.html' %} 
+{% extends "base.html" %}
+
+{% block title %}Daftar Produk - Kasir MBL{% endblock %}
+
 {% block content %}
-<header class="mobile-nav">Produk MBL</header>
-<main>
-  <section>
-    <div class="produk-header">
-      <h2>Daftar Produk & Stok</h2>
-      <div class="product-actions">
-        <form method="GET" class="search-wrapper">
-          <input type="text" name="q" placeholder="Cari produk..." value="{{ search }}">
-          <button type="submit">🔍</button>
-        </form>
-        <a href="{{ url_for('produk.tambah_produk') }}" class="btn btn-add">+ Tambah</a>
-      </div>
-    </div>
-
-    <div class="kategori-tabs">
-      {% for k in kategoris %}
-      <a href="{{ url_for('produk.produk_list', kategori=k, q=search) }}" class="tab {% if kategori_filter == k %}active{% endif %}">
-        {{ k }}
-      </a>
-      {% endfor %}
-    </div>
-
-    {% for kategori, list_produk in produk_per_kategori.items() %}
-    <section class="kategori-group">
-      <h3>{{ kategori }} <span class="count">({{ list_produk|length }})</span></h3>
-      
-      {% for produk in list_produk %}
-      <div class="produk-card">
-        <div class="produk-gambar">
-          <img src="{{ produk.gambar or url_for('static', filename='img/default.png') }}" 
-               alt="{{ produk.nama_produk }}"
-               onerror="this.src='{{ url_for('static', filename='img/default.png') }}'">
+<!-- HEADER & NAVIGASI KATEGORI -->
+<div class="mb-6">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-emerald-800">Produk MBL</h1>
+            <p class="text-sm text-gray-500">Kelola data menu dan stok barang Anda.</p>
         </div>
         
-        <div class="produk-detail">
-          <div class="produk-nama">{{ produk.nama_produk }}</div>
-          <div class="produk-harga">Rp {{ "{:,}".format(produk.harga_jual).replace(',', '.') }}</div>
-          <div class="produk-stok {% if produk.get_stok() == 0 %}habis{% endif %}">
-            Stok: {{ produk.get_stok() }}
-          </div>
+        <div class="flex gap-3">
+            <!-- PENCARIAN -->
+            <form action="{{ url_for('produk.list_produk') }}" method="GET" class="relative group">
+                <input type="hidden" name="kategori" value="{{ kategori_filter }}">
+                <input type="text" name="q" placeholder="Cari menu..." value="{{ search }}"
+                       class="pl-10 pr-4 py-2.5 border border-gray-200 rounded-full focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-all shadow-sm">
+                <i class="fas fa-search absolute left-4 top-3.5 text-gray-400 group-focus-within:text-indigo-500"></i>
+            </form>
+
+            <!-- TOMBOL TAMBAH -->
+            <button type="button" data-bs-toggle="modal" data-bs-target="#modalTambah"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-full font-bold transition shadow-md flex items-center gap-2">
+                <i class="fas fa-plus"></i> <span>Tambah</span>
+            </button>
         </div>
-        
-        <div class="produk-aksi">
-          <a href="{{ url_for('produk.edit_produk', id=produk.id) }}" class="btn btn-edit">Edit</a>
-          <a href="{{ url_for('produk.hapus_produk', id=produk.id) }}" class="btn btn-hapus">Hapus</a>
+    </div>
+
+    <!-- TABS KATEGORI -->
+    <div class="flex items-center gap-2 overflow-x-auto mt-6 pb-2 scrollbar-hide">
+        <a href="{{ url_for('produk.list_produk', kategori='Semua', q=search) }}" 
+           class="px-6 py-2 rounded-full text-xs font-bold border transition
+           {{ 'bg-emerald-600 text-white border-emerald-600' if kategori_filter == 'Semua' else 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50' }}">
+            Semua
+        </a>
+        {% for kat in kategoris %}
+            {% if kat != 'Semua' %}
+            <a href="{{ url_for('produk.list_produk', kategori=kat, q=search) }}" 
+               class="px-6 py-2 rounded-full text-xs font-bold border transition
+               {{ 'bg-emerald-600 text-white border-emerald-600' if kategori_filter == kat else 'bg-white text-gray-500 border-gray-100 hover:bg-gray-50' }}">
+                {{ kat }}
+            </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- TABEL PRODUK PER KATEGORI -->
+<div class="space-y-8 mb-20">
+    {% for nama_kategori, list_produk in produk_per_kategori.items() %}
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-gray-50 px-6 py-3 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-bold text-emerald-700 uppercase text-[10px] tracking-widest">{{ nama_kategori }}</h3>
+            <span class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">
+                {{ list_produk|length }} Item
+            </span>
         </div>
-      </div>
-      {% endfor %}
-      
-    </section>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-white border-b border-gray-50 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    <tr>
+                        <th class="px-6 py-4 text-center">Foto</th>
+                        <th class="px-6 py-4">Menu & Kode</th>
+                        <th class="px-6 py-4 text-right">Harga Jual</th>
+                        <th class="px-6 py-4 text-center">Stok Rekap</th>
+                        <th class="px-6 py-4 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 text-sm">
+                    {% for p in list_produk %}
+                    <tr class="hover:bg-indigo-50/20 transition">
+                        <td class="px-6 py-4 w-20">
+                            <img src="{{ url_for('static', filename='uploads/' + p.gambar) if p.gambar else url_for('static', filename='img/default.png') }}" 
+                                 class="w-12 h-12 rounded-xl object-cover shadow-sm mx-auto border border-gray-100">
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-gray-800">{{ p.nama_produk }}</div>
+                            <div class="text-[10px] text-gray-400 font-mono">{{ p.kode }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-right font-extrabold text-indigo-600">
+                            Rp {{ "{:,.0f}".format(p.harga_jual) }}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            {# PERBAIKAN: Menggunakan p.rekap_stok.jumlah alih-alih p.stok #}
+                            {% set current_qty = p.rekap_stok.jumlah if p.rekap_stok else 0 %}
+                            <span class="px-3 py-1 rounded-lg text-xs font-bold shadow-sm
+                                  {{ 'bg-red-100 text-red-600' if current_qty < 10 else 'bg-emerald-100 text-emerald-600' }}">
+                                {{ current_qty }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex justify-center gap-2">
+                                <!-- Tombol Restok -->
+                                <button data-bs-toggle="modal" data-bs-target="#modalRestok{{ p.id }}" 
+                                        class="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition" title="Restok">
+                                    <i class="fas fa-boxes"></i>
+                                </button>
+                                <!-- Edit & Hapus -->
+                                <div class="flex justify-center gap-2">
+                                <!-- Tombol Edit (Memicu Modal) -->
+                                <button type="button" data-bs-toggle="modal" data-bs-target="#modalEdit{{ p.id }}" 
+                                        class="p-2 text-indigo-500 hover:bg-indigo-50 rounded-lg transition">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                
+                                <!-- Tombol Hapus (Memicu Modal Konfirmasi) -->
+                                <button type="button" data-bs-toggle="modal" data-bs-target="#modalHapus{{ p.id }}" 
+                                        class="p-2 text-red-400 hover:bg-red-50 rounded-lg transition">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                </div>                            
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- MODAL RESTOK (Satu per Produk) -->
+                    <div class="modal fade" id="modalRestok{{ p.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-sm">
+                            <div class="modal-content rounded-3xl border-none shadow-2xl">
+                                <div class="modal-header border-b p-6">
+                                    <h5 class="font-bold">Restok: {{ p.nama_produk }}</h5>
+                                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form action="{{ url_for('produk.restok_produk') }}" method="POST">
+                                    <input type="hidden" name="produk_id" value="{{ p.id }}">
+                                    <div class="modal-body p-6 space-y-4 text-left">
+                                        <div>
+                                            <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1">Jumlah Masuk</label>
+                                            <input type="number" name="jumlah_tambah" required class="w-full px-4 py-2 border rounded-xl" min="1" placeholder="0">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1">Keterangan</label>
+                                            <select name="keterangan" class="w-full px-4 py-2 border rounded-xl text-sm">
+                                                <option value="Restok Harian">Restok Harian</option>
+                                                <option value="Pembelian Supplier">Pembelian Supplier</option>
+                                                <option value="Koreksi Stok">Koreksi Stok</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="p-6 pt-0">
+                                        <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition">Simpan Stok</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODAL EDIT PRODUK -->
+                    <div class="modal fade" id="modalEdit{{ p.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content rounded-3xl border-none shadow-2xl">
+                                <div class="modal-header p-6 bg-gray-50 border-b">
+                                    <h5 class="font-bold">Edit Produk: {{ p.nama_produk }}</h5>
+                                    <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form action="{{ url_for('produk.edit_produk', id=p.id) }}" method="POST" enctype="multipart/form-data">
+                                    <div class="modal-body p-8 grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-[10px] font-bold text-gray-400 uppercase">Nama Menu</label>
+                                                <input type="text" name="nama_produk" value="{{ p.nama_produk }}" required class="w-full px-4 py-2 border rounded-xl">
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label class="block text-[10px] font-bold text-gray-400 uppercase">Harga Beli</label>
+                                                    <input type="number" name="harga_beli" value="{{ p.harga_beli }}" class="w-full px-4 py-2 border rounded-xl">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[10px] font-bold text-gray-400 uppercase">Harga Jual</label>
+                                                    <input type="number" name="harga_jual" value="{{ p.harga_jual }}" required class="w-full px-4 py-2 border rounded-xl text-indigo-600 font-bold">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-4">
+                                            <div>
+                                                <label class="block text-[10px] font-bold text-gray-400 uppercase">Kategori</label>
+                                                <select name="kategori" class="w-full px-4 py-2 border rounded-xl">
+                                                    {% for kat in kategoris %}
+                                                        {% if kat != 'Semua' %}
+                                                        <option value="{{ kat }}" {{ 'selected' if p.kategori == kat }}>{{ kat }}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[10px] font-bold text-gray-400 uppercase">Ganti Foto</label>
+                                                <input type="file" name="gambar" class="text-[10px] text-gray-400">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer p-6 bg-gray-50 border-t flex gap-3">
+                                        <button type="button" class="flex-1 py-3 border rounded-xl font-bold" data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold">Simpan Perubahan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MODAL HAPUS PRODUK -->
+                    <div class="modal fade" id="modalHapus{{ p.id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-sm">
+                            <div class="modal-content rounded-3xl border-none shadow-2xl">
+                                <div class="modal-body p-8 text-center">
+                                    <i class="fas fa-exclamation-circle text-5xl text-red-500 mb-4"></i>
+                                    <h5 class="font-bold text-gray-800 mb-2">Hapus Produk?</h5>
+                                    <p class="text-sm text-gray-500 mb-6">Anda yakin ingin menghapus <strong>{{ p.nama_produk }}</strong>? Data stok juga akan hilang.</p>
+                                    <div class="flex gap-3">
+                                        <button type="button" class="flex-1 py-3 border rounded-xl text-sm font-bold" data-bs-dismiss="modal">Batal</button>
+                                        <a href="{{ url_for('produk.hapus_produk', id=p.id) }}" 
+                                        class="flex-1 py-3 bg-red-600 text-white rounded-xl text-sm font-bold flex items-center justify-center">
+                                            Ya, Hapus
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <!-- JIKA KOSONG -->
+    <div class="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
+        <i class="fas fa-box-open text-5xl text-gray-200 mb-4"></i>
+        <p class="text-gray-400 font-medium">Menu tidak ditemukan.</p>
+    </div>
     {% endfor %}
-  </section>
-</main>
+</div>
 
-<nav class="bottom-nav">
-  <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
-  <a href="{{ url_for('produk.produk_list') }}" class="active">Produk</a>
-  <a href="{{ url_for('penjualan.penjualan_list') }}">Penjualan</a>
-  <a href="{{ url_for('laporan.laporan_list') }}">Laporan</a>
-  <a href="{{ url_for('pengaturan.pengaturan_list') }}">Pengaturan</a>
-</nav>
-<script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+<!-- MODAL TAMBAH PRODUK -->
+<div class="modal fade" id="modalTambah" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-3xl border-none shadow-2xl overflow-hidden">
+            <div class="modal-header p-6 bg-gray-50 border-b">
+                <h5 class="text-xl font-bold text-gray-800">Tambah Produk Baru</h5>
+                <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('produk.tambah_produk') }}" method="POST" enctype="multipart/form-data">
+                <div class="modal-body p-8 grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+                    <!-- KIRI -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Kode (Unik)</label>
+                            <input type="text" name="kode" required class="w-full px-4 py-2.5 border rounded-xl focus:ring-2 focus:ring-indigo-500" placeholder="MS.001">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Nama Menu</label>
+                            <input type="text" name="nama_produk" required class="w-full px-4 py-2.5 border rounded-xl" placeholder="Contoh: Miso Ayam">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Harga Beli</label>
+                                <input type="number" name="harga_beli" value="0" class="w-full px-4 py-2 border rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Harga Supp</label>
+                                <input type="number" name="harga_beli_supplier" value="0" class="w-full px-4 py-2 border rounded-xl">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- KANAN -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Kategori</label>
+                            <select name="kategori" required class="w-full px-4 py-2.5 border rounded-xl">
+                                {% for kat in kategoris %}
+                                    {% if kat != 'Semua' %}<option value="{{ kat }}">{{ kat }}</option>{% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Harga Jual</label>
+                            <input type="number" name="harga_jual" required class="w-full px-4 py-2.5 border rounded-xl font-bold text-indigo-600">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Stok Awal</label>
+                            <input type="number" name="stok" value="0" class="w-full px-4 py-2.5 border rounded-xl">
+                        </div>
+                        <div>
+                            <input type="file" name="gambar" class="text-[10px] text-gray-400">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer p-6 bg-gray-50 border-t flex gap-3">
+                    <button type="button" class="flex-1 py-3 border rounded-xl font-bold" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    // Gunakan querySelectorAll untuk menangkap semua input gambar dengan class tertentu
+    document.querySelectorAll('.input-gambar-preview').forEach(input => {
+        input.onchange = e => {
+            const [file] = e.target.files;
+            if (file) {
+                // Cari elemen preview yang berada di dalam kontainer modal yang sama
+                const modalBody = input.closest('.modal-body');
+                const preview = modalBody.querySelector('.img-preview');
+                
+                if (preview) {
+                    preview.src = URL.createObjectURL(file);
+                    preview.classList.remove('hidden');
+                }
+            }
+        };
+    });
+</script>
 {% endblock %}

@@ -9,4 +9,4 @@ class StokHarian(db.Model):
     jumlah = db.Column(db.Integer, nullable=False)  # + masuk, - keluar
     keterangan = db.Column(db.String(100))  # 'Restock awal', 'Penjualan', 'Retur', dll
     
-    produk = db.relationship('Produk', backref='riwayat_stok')
+    produk = db.relationship('Produk', back_populates='riwayat_stok')

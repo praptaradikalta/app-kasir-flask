@@ -6,4 +6,4 @@ class Stok(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     produk_id = db.Column(db.Integer, db.ForeignKey('produk.id'), unique=True)
     jumlah = db.Column(db.Integer, default=0)
-    produk = db.relationship('Produk', back_populates='stok')
+    produk = db.relationship('Produk', back_populates='rekap_stok')

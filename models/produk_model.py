@@ -19,9 +19,15 @@ class Produk(db.Model):
     harga_beli_supplier = db.Column(db.Integer, default=0)  # Khusus konsinyasi
     is_konsinyasi = db.Column(db.Boolean, default=False)  # True = titip, False = beli/resep
     gambar = db.Column(db.Text)  # tambahin field gambar
+    
+    # --- RELASI LAMA (TETAP DIPERTAHANKAN) ---
     resep = db.relationship('Resep', backref='produk', uselist=False, lazy=True)
     detail = db.relationship('PenjualanDetail', backref='produk', lazy=True)
-    stok = db.relationship('Stok', back_populates='produk', lazy=True)
+
+    # --- RELASI BARU (SINKRON DENGAN DUA TABEL STOK ANDA) ---
+    # Menggantikan relasi 'stok' lama agar tidak error InstrumentedList
+    rekap_stok = db.relationship('Stok', back_populates='produk', uselist=False, cascade="all, delete-orphan")
+    riwayat_stok = db.relationship('StokHarian', back_populates='produk', lazy=True)
 
     def update_hpp(self):
         """Hitung HPP otomatis kalo ada resep"""
@@ -33,8 +39,8 @@ class Produk(db.Model):
             db.session.commit()
 
     def get_stok(self):
-        s = Stok.query.filter_by(produk_id=self.id).first()
-        return s.jumlah if s else 0
+        # Menggunakan relasi rekap_stok yang baru
+        return self.rekap_stok.jumlah if self.rekap_stok else 0
 
     def __repr__(self):
         return f'<Produk {self.nama_produk}>'

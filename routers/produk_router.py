@@ -20,7 +20,7 @@ def allowed_file(filename):
 
 @produk.route('/', methods=['GET'])
 @login_required
-def produk_list():
+def list_produk():
     search = request.args.get('q', '')
     kategori_filter = request.args.get('kategori', 'Semua')
 
@@ -43,97 +43,88 @@ def produk_list():
         kategoris=['Semua'] + [k.value for k in KategoriEnum]
     )
 
-@produk.route('/tambah', methods=['GET', 'POST'])
+@produk.route('/tambah', methods=['POST'])
 @login_required
 def tambah_produk():
-    kategoris = [kategori.value for kategori in KategoriEnum]
     if request.method == 'POST':
+        # Mengambil data sesuai skema SQL terbaru Anda
+        kode = request.form.get('kode') # Ambil kode unik
         nama = sanitize_string(request.form.get('nama_produk'))
-        kategori = validate_enum(request.form.get('kategori'), KategoriEnum)
-        stok_awal = parse_int(request.form.get('stok'))
-        harga_beli = parse_int(request.form.get('harga_beli'))
-        harga_jual = parse_int(request.form.get('harga_jual'))
+        kategori = request.form.get('kategori')
+        h_jual = parse_int(request.form.get('harga_jual'))
+        h_beli = parse_int(request.form.get('harga_beli'))
+        h_beli_supp = parse_int(request.form.get('harga_beli_supplier') or 0) # Field supplier
         is_konsinyasi = bool(int(request.form.get('is_konsinyasi', 0)))
+        
+        # Penanganan gambar
         file = request.files.get('gambar')
+        filename = secure_filename(file.filename) if file and file.filename != '' else None
+        if filename:
+            file.save(os.path.join('static/uploads', filename))
 
-        if not nama:
-            flash('Nama produk wajib diisi', 'error')
-            return redirect(url_for('produk.tambah_produk'))
-        if not kategori:
-            flash('Kategori tidak valid', 'error')
-            return redirect(url_for('produk.tambah_produk'))
-        if harga_jual < harga_beli:
-            flash('Harga jual tidak boleh lebih kecil dari harga beli!', 'error')
-            return redirect(url_for('produk.tambah_produk'))
-
-        gambar_url = None
-        if file and file.filename:
-            if not allowed_file(file.filename):
-                flash('File harus gambar (png, jpg, jpeg, gif)', 'error')
-                return redirect(url_for('produk.tambah_produk'))
-            if file.content_length > MAX_FILE_SIZE:
-                flash('Ukuran file maksimal 2MB', 'error')
-                return redirect(url_for('produk.tambah_produk'))
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            file.save(filepath)
-            gambar_url = f'/static/uploads/produk/{filename}'
-
-        produk_baru = Produk(
-            nama_produk=nama,
-            kategori=kategori,
-            harga_beli=harga_beli,
-            harga_jual=harga_jual,
-            is_konsinyasi=is_konsinyasi,
-            gambar=gambar_url
-        )
+        # Proses Simpan (Commit) sesuai Source [1, 2]
+        # Proses simpan ke 3 tabel sekaligus tetap menggunakan 
+        # objek yang diimpor di atas
         try:
-            db.session.add(produk_baru)
-            db.session.commit()
-            if stok_awal > 0:
-                stok_obj = Stok(produk_id=produk_baru.id, jumlah=stok_awal)
-                db.session.add(stok_obj)
-                db.session.commit()
-            flash('Produk berhasil ditambah', 'success')
+            produk_baru = Produk(
+                kode=kode,
+                nama_produk=nama,
+                kategori=kategori,
+                harga_jual=h_jual,
+                harga_beli=h_beli,
+                harga_beli_supplier=h_beli_supp,
+                is_konsinyasi=is_konsinyasi,
+                gambar=filename
+            )
+
+            db.session.add(p_baru)
+            db.session.flush() 
+
+            # Inisialisasi dari models/stok.py
+            rekap = Stok(produk_id=p_baru.id, jumlah=stok_awal)
+            db.session.add(rekap)
+
+            # Inisialisasi dari models/stok_harian.py
+            rincian = StokHarian(produk_id=p_baru.id, jumlah=stok_awal, keterangan="Stok Awal")
+            db.session.add(rincian)
+
+            db.session.commit() # Menulis data permanen ke SQLite
+            flash(f'Produk {nama} berhasil disimpan!', 'success')
         except Exception as e:
             db.session.rollback()
-            flash(f'Error saat menyimpan produk: {e}', 'error')
-        return redirect(url_for('produk.produk_list'))
-    return render_template('/add_produk.html', kategoris=kategoris)
+            flash(f'Gagal menyimpan: {str(e)}', 'danger')
+
+    return redirect(url_for('produk.list_produk'))
+
 
 # update edit_produk juga biar bisa ganti gambar
-@produk.route('/edit/<int:id>', methods=['GET', 'POST'])
+@produk.route('/edit/<int:id>', methods=['POST'])
 @login_required
 def edit_produk(id):
     produk = Produk.query.get_or_404(id)
-    kategoris = [k.value for k in KategoriEnum]
-    stok_obj = produk.stok[0] if produk.stok else None
-    if request.method == 'POST':
-        produk.nama_produk = request.form['nama_produk']
-        produk.kategori = request.form['kategori']
-        produk.harga_beli = int(float(request.form.get('harga_beli', produk.harga_beli or 0)))
-        produk.harga_jual = int(float(request.form.get('harga_jual', produk.harga_jual or 0)))
-        produk.is_konsinyasi = bool(int(request.form.get('is_konsinyasi', 0)))
+    try:
+        # 1. Update Data Dasar
+        produk.nama_produk = request.form.get('nama_produk')
+        produk.kategori = request.form.get('kategori')
+        produk.harga_jual = int(request.form.get('harga_jual'))
+        produk.harga_beli = int(request.form.get('harga_beli') or 0)
+        produk.harga_beli_supplier = int(request.form.get('harga_beli_supplier') or 0)
+        
+        # 2. Logika Gambar (Jika ada upload baru)
         file = request.files.get('gambar')
         if file and file.filename:
-            if not allowed_file(file.filename):
-                flash('File harus gambar (png, jpg, jpeg, gif)', 'error')
-                return redirect(url_for('produk.edit_produk', id=id))
-            if file.content_length > MAX_FILE_SIZE:
-                flash('Ukuran file maksimal 2MB', 'error')
-                return redirect(url_for('produk.edit_produk', id=id))
+            # Tambahkan fungsi validasi gambar Anda di sini
             filename = secure_filename(file.filename)
-            filepath = os.path.join(UPLOAD_FOLDER, filename)
-            file.save(filepath)
-            produk.gambar = f'/static/uploads/produk/{filename}'
-        try:
-            db.session.commit()
-            flash('Produk berhasil diupdate!', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error saat update produk: {e}', 'error')
-        return redirect(url_for('produk.produk_list'))
-    return render_template('produk/edit_produk.html', produk=produk, kategoris=kategoris, stok=stok_obj.jumlah if stok_obj else 0)
+            file.save(os.path.join(UPLOAD_FOLDER, filename))
+            produk.gambar = filename
+
+        db.session.commit()
+        flash(f'Produk {produk.nama_produk} berhasil diupdate!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error saat update: {str(e)}', 'danger')
+        
+    return redirect(url_for('produk.list_produk')) # Pastikan nama endpoint benar
 
 @produk.route('/hapus/<int:id>')
 @login_required
@@ -148,3 +139,27 @@ def hapus_produk(id):
      flash(f'Error saat hapus produk: {e}', 'error')
  return redirect(url_for('produk.produk_list'))
 
+@produk.route('/restok', methods=['POST'])
+@login_required
+def restok_produk():
+    p_id = request.form.get('produk_id')
+    qty_tambah = int(request.form.get('jumlah_tambah', 0))
+    ket = request.form.get('keterangan', 'Restok Produk')
+
+    try:
+        # 1. Update Tabel STOK (Rekap)
+        stok_obj = Stok.query.filter_by(produk_id=p_id).first()
+        if stok_obj:
+            stok_obj.jumlah += qty_tambah
+        
+        # 2. Tambah Baris ke STOK_HARIAN (Log)
+        log = StokHarian(produk_id=p_id, jumlah=qty_tambah, keterangan=ket)
+        db.session.add(log)
+        
+        db.session.commit()
+        flash('Stok berhasil diperbarui!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Gagal memperbarui stok: {str(e)}', 'danger')
+    
+    return redirect(url_for('produk.list_produk'))

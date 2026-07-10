@@ -5,74 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Kasir UKM{% endblock %}</title>
 
-    <!-- 1. Bootstrap CSS (Fondasi Layout) -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <!-- 1. Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 2. FontAwesome (Untuk Ikon Navbar) -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- 2. Bootstrap CSS (WAJIB TETAP ADA JIKA MASIH PAKAI MODAL BOOTSTRAP) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- 3. CSS KUSTOM ANDA (Untuk Gaya Visual Unik) -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/produk.css') }}">
+    <!-- 3. FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
-        /* Pengaturan tambahan agar konten tidak tertutup navbar bawah */
-        body {
-            padding-bottom: 80px; 
-            background-color: #f8f9fa;
-        }
-        .navbar-bottom-custom {
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-        }
-        .nav-link {
-            color: #6c757d !important;
-        }
-        .nav-link.active {
-            color: #0d6efd !important;
-        }
+        /* Tetap simpan ini agar konten tidak tertutup navbar bawah */
+        body { padding-bottom: 90px; }
+        
+        /* Hilangkan gaya .nav-link lama karena sudah diganti class Tailwind */
     </style>
 </head>
-<body>
+<body class="bg-gray-50"> <!-- Gunakan utilitas Tailwind untuk background bodi -->
 
-    <!-- Area Konten Utama Dinamis -->
-    <div class="container mt-4">
+    <!-- Container Utama: Tambahkan mx-auto agar ke tengah di desktop -->
+    <div class="container mx-auto mt-6 px-4">
         {% block content %}{% endblock %}
     </div>
 
-    <!-- Navbar Bottom yang Konsisten (Mobile & Desktop) -->
-    <nav class="navbar fixed-bottom navbar-light bg-white border-top navbar-expand navbar-bottom-custom">
-        <ul class="navbar-nav nav-justified w-100">
-            <li class="nav-item">
-                <a class="nav-link text-center" href="{{ url_for('penjualan.buat_order') }}">
-                    <i class="fas fa-shopping-cart d-block mb-1"></i>
-                    <span class="small">Order</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-center" href="/">
-                    <i class="fas fa-th-large d-block mb-1"></i>
-                    <span class="small">Dashboard</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-center" href="{{ url_for('produk.list_produk') }}">
-                    <i class="fas fa-box d-block mb-1"></i>
-                    <span class="small">Produk</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-center" href="#">
-                    <i class="fas fa-user d-block mb-1"></i>
-                    <span class="small">Profil</span>
-                </a>
-            </li>
-        </ul>
+    <!-- Navbar Bottom Tailwind -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] px-2 py-3 z-50">
+        <div class="flex justify-around items-center max-w-lg mx-auto">
+            <a href="{{ url_for('penjualan.buat_order') }}" class="flex flex-col items-center text-gray-400 hover:text-indigo-600 transition group">
+                <i class="fas fa-shopping-cart text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">Order</span>
+            </a>
+            <a href="{{ url_for('user.dashboard') }}" class="flex flex-col items-center text-indigo-600">
+                <i class="fas fa-th-large text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">Dashboard</span>
+            </a>
+            <a href="{{ url_for('produk.list_produk') }}" class="flex flex-col items-center text-gray-400 hover:text-indigo-600 transition">
+                <i class="fas fa-box text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">Produk</span>
+            </a>
+            <a href="#" class="flex flex-col items-center text-gray-400 hover:text-indigo-600 transition">
+                <i class="fas fa-user text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">Profil</span>
+            </a>
+        </div>
     </nav>
 
-    <!-- 4. JS Bootstrap (Wajib untuk komponen interaktif seperti Modal) -->
-    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Script Kustom Anda jika ada -->
     {% block scripts %}{% endblock %}
 </body>
 </html>

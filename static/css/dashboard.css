@@ -33,9 +33,46 @@ body {
   background:
     radial-gradient(circle at top left, rgba(37, 122, 99, 0.08), transparent 28%),
     linear-gradient(180deg, #f7f8f8 0%, var(--bg) 100%);
+  background-color: #f3f4f6 !important;
   color: var(--text);
   font-family: 'Plus Jakarta Sans', sans-serif;
   min-height: 100vh;
+}
+
+
+/* Styling Kartu Statistik */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border-radius: 12px !important; /* Membuat sudut lebih tumpul/modern */
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Efek mengangkat saat kursor di atasnya */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* Warna Ikon Statis (Sesuaikan dengan class di HTML) */
+.text-success { color: #10b981 !important; }
+.text-primary { color: #4f46e5 !important; }
+.text-warning { color: #f59e0b !important; }
+.text-danger  { color: #ef4444 !important; }
+
+/* Tombol Shift Aktif */
+.btn-primary {
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+/* Menu Aksi Cepat */
+.list-group-item {
+    border-color: #f3f4f6 !important;
+    padding: 1.2rem 1rem !important;
+}
+
+.list-group-item:hover {
+    background-color: #f9fafb !important;
 }
 
 /* Topbar */
@@ -398,3 +435,4 @@ body {
     grid-template-columns: repeat(2, 1fr);
   }
 }
+

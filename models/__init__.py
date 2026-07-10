@@ -1,6 +1,6 @@
 # model/__init__.py
 from .user_model import User
-from .produk_model import Produk
+from .produk_model import Produk, KategoriEnum 
 from .meja import Meja
 from .penjualan import Penjualan
 from .meja_penjualan import MejaPenjualan

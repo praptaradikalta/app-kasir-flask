@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .item-done { text-decoration: line-through; opacity: 0.5; }
+</style>
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- KOLOM DAPUR -->
+        <div class="col-md-6 border-end">
+            <h5 class="fw-bold text-danger"><i class="bi bi-fire"></i> ANTREAN DAPUR</h5>
+            <hr>
+            {% for p in pesanan %}
+                {% for item in p.items if item.produk.kategori == 'Makanan' %}
+                <div class="card mb-2 shadow-sm border-0 {% if item.is_ready %}bg-light{% endif %}">
+                    <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                        <div class="{% if item.is_ready %}item-done{% endif %}">
+                            <small class="text-muted">Meja {{ p.meja_id }} (#{{ p.id }})</small>
+                            <div class="fw-bold text-primary">{{ item.qty }}x {{ item.produk.nama_produk }}</div>
+                            <small class="badge bg-info text-dark">{{ item.varian }}</small>
+                        </div>
+                        <!-- Tombol Centang -->
+                        <a href="{{ url_for('penjualan.toggle_siap_item', id=item.id) }}" 
+                           class="btn {% if item.is_ready %}btn-success{% else %}btn-outline-secondary{% endif %} btn-sm rounded-circle">
+                            <i class="bi bi-check-lg"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+
+        <!-- KOLOM BAR -->
+        <div class="col-md-6">
+            <h5 class="fw-bold text-info"><i class="bi bi-cup-straw"></i> ANTREAN BAR</h5>
+            <hr>
+            {% for p in pesanan %}
+                {% for item in p.items if item.produk.kategori == 'Minuman' %}
+                <div class="card mb-2 shadow-sm border-0 {% if item.is_ready %}bg-light{% endif %}">
+                    <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                        <div class="{% if item.is_ready %}item-done{% endif %}">
+                            <small class="text-muted">Meja {{ p.meja_id }} (#{{ p.id }})</small>
+                            <div class="fw-bold text-success">{{ item.qty }}x {{ item.produk.nama_produk }}</div>
+                        </div>
+                        <!-- Tombol Centang -->
+                        <a href="{{ url_for('penjualan.toggle_siap_item', id=item.id) }}" 
+                           class="btn {% if item.is_ready %}btn-success{% else %}btn-outline-secondary{% endif %} btn-sm rounded-circle">
+                            <i class="bi bi-check-lg"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Tombol Kirim ke Kasir (Jika SEMUA item sudah dicentang) -->
+    <div class="mt-4 text-center border-top pt-3">
+        <h6 class="small text-muted mb-3">Selesaikan transaksi jika semua pesanan sudah di meja pelanggan</h6>
+        {% for p in pesanan %}
+        <a href="{{ url_for('penjualan.siap_saji', id=p.id) }}" class="btn btn-primary shadow mb-2">
+            <i class="bi bi-send-check"></i> Pesanan Meja {{ p.meja_id }} Siap Ditagih
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+
+'''
+Mengapa cara ini efektif?
+Otomatisasi Kategori: Kasir cukup menginput semua pesanan dalam satu keranjang
+. Sistem secara cerdas akan memilah: 
+  Jika kategori produk adalah 'Makanan', ia muncul di layar Dapur. 
+  Jika 'Minuman', ia muncul di layar Bar
+. Satu Layar atau Dua Layar: Anda bisa membuka halaman /penjualan/antrean ini 
+  di dua tablet berbeda (satu di Dapur, satu di Bar). 
+  Orang dapur cukup fokus melihat sisi kiri, 
+  orang bar fokus melihat sisi kanan.
+  Konsistensi Data: Varian seperti "Mie Kuning" atau "Mie Putih" hanya akan muncul di bagian Dapur 
+  karena kategori produknya adalah 'Makanan'
+. Alur Pelunasan: Setelah bagian Bar dan Dapur mengonfirmasi "Selesai", 
+  klik tombol "Selesaikan Semua" untuk mengubah status menjadi 'Belum Lunas', 
+  sehingga kasir tahu meja tersebut sudah siap ditagih pembayarannya.
+
+Keunggulan Fitur Ini:
+Kontrol Detail: Bagian Dapur bisa mencentang satu per satu 
+porsi Miso yang sudah selesai tanpa harus menunggu minuman selesai dibuat. [Riwayat Percakapan]
+Indikator Visual: Item yang sudah dicentang akan menjadi transparan dan dicoret (item-done), 
+sehingga mata kasir atau pelayan langsung fokus pada item yang masih hitam/aktif. [Riwayat Percakapan]
+Sinkronisasi: Karena data disimpan di database (is_ready), jika halaman di-refresh atau dibuka di HP lain, 
+status centang tetap tersimpan (tidak hilang). [29, Riwayat Percakapan]
+Setelah semua item dalam satu meja dicentang, pelayan tinggal menekan tombol "Siap Ditagih" 
+di bagian bawah untuk memindahkan pesanan tersebut ke meja kasir dalam status 'Belum Lunas'. 
+
+'''

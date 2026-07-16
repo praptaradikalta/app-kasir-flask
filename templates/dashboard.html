@@ -63,19 +63,45 @@
         <h6 class="fw-bold mb-0"><i class="fas fa-bolt me-2 text-warning"></i>Aksi Cepat</h6>
     </div>
     <div class="list-group list-group-flush border-top">
-        <a href="{{ url_for('penjualan.buat_order') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
+        <a href="{{ url_for('penjualan.index_kasir') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
             <div class="d-flex w-100 justify-content-between align-items-center">
                 <span><i class="fas fa-cart-plus me-3 text-primary"></i>Buat Pesanan Baru</span>
                 <i class="fas fa-chevron-right small text-muted"></i>
             </div>
         </a>
+
+        <!-- FITUR BARU: Antrean Dapur & Bar -->
+        <a href="{{ url_for('penjualan.antrean_pengerjaan') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom bg-light">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+                <span><i class="bi bi-fire me-3 text-danger"></i>Antrean Produksi (Dapur/Bar)</span>
+                <span class="badge bg-danger rounded-pill">Status: Dapur</span>
+            </div>
+        </a>
+
+        <!-- FITUR BARU: Tagihan Meja (Belum Lunas) -->
+        <a href="{{ url_for('penjualan.daftar_tagihan') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+                <span><i class="bi bi-wallet2 me-3 text-success"></i>Daftar Tagihan Meja</span>
+                <span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>
+            </div>
+        </a>
+
         <a href="{{ url_for('produk.list_produk') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
             <div class="d-flex w-100 justify-content-between align-items-center">
                 <span><i class="fas fa-boxes me-3 text-info"></i>Manajemen Produk</span>
                 <i class="fas fa-chevron-right small text-muted"></i>
             </div>
         </a>
-        <a href="#" class="list-group-item list-group-item-action py-3 border-0">
+
+        <a href="{{ url_for('penjualan.riwayat_penjualan') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+            <!-- Perhatikan perubahan bi bi- dan penambahan me-3 agar jarak teks rapi -->
+                <span><i class="bi bi-clock-history me-3 text-info"></i>Riwayat Transaksi</span>
+                <i class="bi bi-chevron-right small text-muted"></i>
+            </div>    
+        </a>
+
+        <a href="{{ url_for('laporan.laporan_harian') }}" class="list-group-item list-group-item-action py-3 border-0">
             <div class="d-flex w-100 justify-content-between align-items-center">
                 <span><i class="fas fa-file-alt me-3 text-success"></i>Laporan Penjualan</span>
                 <i class="fas fa-chevron-right small text-muted"></i>

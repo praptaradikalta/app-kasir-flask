@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Nota #{{ t.id }}</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; width: 58mm; font-size: 12px; margin: 0; }
+        .text-center { text-align: center; }
+        .text-center strong {
+        font-size: 20px; /* Membuat judul lebih besar */
+        }
+        .line { border-bottom: 1px dashed #000; margin: 5px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        .qty { width: 15px; }
+        .total-row { font-weight: bold; }
+        @media print { .no-print { display: none; } }
+    </style>
+
+</head>
+<body onload="window.print()">
+    <div class="text-center">
+        <strong>WR MISO BABAT LESTARI</strong><br>
+        Jl. Dr.Fl. Tobing No. 148 Lestari - Kisaran Timur<br>
+        Asahan - Sumut<br>
+        #{{ t.id }} | {{ t.tanggal.strftime('%d/%m/%Y %H:%M') }}
+    </div>
+
+    <div class="line"></div>
+    
+    <table>
+        {% for item in t.items %}
+        <tr>
+            <td colspan="3">{{ item.produk.nama_produk }} 
+                {% if item.varian and item.varian != '-' %}({{ item.varian }}){% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td class="qty">{{ item.qty }}x</td>
+            <td>@{{ "{:,}".format(item.harga_satuan) }}</td>
+            <td align="right">{{ "{:,}".format(item.subtotal) }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="line"></div>
+
+    <table>
+        <tr><td>TOTAL</td><td align="right">Rp {{ "{:,}".format(t.total_bayar) }}</td></tr>
+        <tr><td>BAYAR</td><td align="right">Rp {{ "{:,}".format(t.bayar) }}</td></tr>
+        <tr><td>KEMBALI</td><td align="right">Rp {{ "{:,}".format(t.kembalian) }}</td></tr>
+    </table>
+
+    <div class="line"></div>
+    <div class="text-center">Terima Kasih!<br>Selamat Menikmati</div>
+
+    <div class="no-print" style="margin-top: 20px;">
+        <button onclick="window.close()">Tutup Halaman</button>
+    </div>
+</body>
+</html>

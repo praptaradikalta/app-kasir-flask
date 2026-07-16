@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Antrean Pengerjaan - Kasir MBL{% endblock %}
+
+{% block content %}
+<style>
+    .item-done { text-decoration: line-through; opacity: 0.6; }
+    .card-antrean { transition: transform 0.2s; }
+</style>
+
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0"><i class="bi bi-fire text-danger"></i> Produksi Pesanan</h4>
+        <span class="badge bg-dark">Status: DAPUR</span>
+    </div>
+
+    <div class="row g-3">
+        <!-- SEKSI DAPUR (MAKANAN) -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm bg-light h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="fw-bold text-danger mb-0"><i class="bi bi-egg-fried"></i> DAFTAR MASAK (DAPUR)</h6>
+                </div>
+                <div class="card-body">
+                    {% for p in pesanan %}
+                        {% for item in p.items if item.produk.kategori == 'Makanan' %}
+                        <div class="card mb-2 border-0 shadow-sm card-antrean {% if item.is_ready %}bg-success-subtle{% endif %}">
+                            <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                                <div class="{% if item.is_ready %}item-done{% endif %}">
+                                    <div class="small text-muted">Meja {{ p.meja_id or 'Bungkus' }} (#{{ p.id }})</div>
+                                    <div class="fw-bold text-dark fs-5">{{ item.qty }}x {{ item.produk.nama_produk }}</div>
+                                    {% if item.varian and item.varian != '-' %}
+                                    <span class="badge bg-info text-dark">{{ item.varian }}</span>
+                                    {% endif %}
+                                </div>
+                                <a href="{{ url_for('penjualan.toggle_siap_item', id=item.id) }}" 
+                                   class="btn {% if item.is_ready %}btn-success{% else %}btn-outline-secondary{% endif %} rounded-circle shadow-sm">
+                                    <i class="bi bi-check-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- SEKSI BAR (MINUMAN) -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm bg-light h-100">
+                <div class="card-header bg-white border-0 py-3">
+                    <h6 class="fw-bold text-info mb-0"><i class="bi bi-cup-straw"></i> DAFTAR MINUMAN (BAR)</h6>
+                </div>
+                <div class="card-body">
+                    {% for p in pesanan %}
+                        {% for item in p.items if item.produk.kategori == 'Minuman' %}
+                        <div class="card mb-2 border-0 shadow-sm card-antrean {% if item.is_ready %}bg-success-subtle{% endif %}">
+                            <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                                <div class="{% if item.is_ready %}item-done{% endif %}">
+                                    <div class="small text-muted">Meja {{ p.meja_id or 'Bungkus' }} (#{{ p.id }})</div>
+                                    <div class="fw-bold text-dark fs-5">{{ item.qty }}x {{ item.produk.nama_produk }}</div>
+                                </div>
+                                <a href="{{ url_for('penjualan.toggle_siap_item', id=item.id) }}" 
+                                   class="btn {% if item.is_ready %}btn-success{% else %}btn-outline-secondary{% endif %} rounded-circle shadow-sm">
+                                    <i class="bi bi-check-lg"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tombol Finalisasi Meja -->
+    <div class="mt-4">
+        <h6 class="fw-bold text-muted small text-uppercase mb-3">Selesaikan Pesanan Per Meja (Kirim ke Kasir)</h6>
+        <div class="d-flex flex-wrap gap-2">
+            {% for p in pesanan %}
+            <a href="{{ url_for('penjualan.siap_saji', id=p.id) }}" class="btn btn-primary btn-sm shadow-sm">
+                <i class="bi bi-send-check"></i> Meja {{ p.meja_id or 'Bungkus' }} SIAP
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+'''
+Penjelasan Fungsional:
+Dapur & Bar: Menggunakan for ... if item.produk.kategori == '...' 
+untuk membagi tampilan tanpa perlu membuat rute baru. 
+Bagian Dapur fokus pada kolom merah, Bar fokus pada kolom biru [604, Riwayat Percakapan].
+
+Checkbox (Centang): Menggunakan warna bg-success-subtle dan gaya item-done (coret teks) 
+agar pengerjaan terpantau dengan jelas [Riwayat Percakapan].
+Finalisasi: Tombol "Meja X SIAP" di bagian Dapur memindahkan seluruh status pesanan ke Belum Lunas,
+yang kemudian otomatis muncul di halaman Tagihan kasir [Riwayat Percakapan].
+Halaman Tagihan: Memberikan ringkasan belanja meja tersebut agar kasir bisa mencetak bon sementara 
+atau memproses pembayaran tunai saat pelanggan ingin pulang [29, Riwayat Percakapan].
+
+'''

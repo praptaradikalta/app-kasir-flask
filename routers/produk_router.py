@@ -4,6 +4,7 @@ from models.produk_model import Produk, KategoriEnum
 from extensions import db
 from flask_login import login_required
 from models.stok import Stok
+from models.stok_harian_model import StokHarian
 import os
 from werkzeug.utils import secure_filename
 
@@ -46,26 +47,31 @@ def list_produk():
 @produk.route('/tambah', methods=['POST'])
 @login_required
 def tambah_produk():
+    print("\n>>> [DEBUG] Memulai proses tambah_produk...") # Indikator awal
+    
     if request.method == 'POST':
-        # Mengambil data sesuai skema SQL terbaru Anda
-        kode = request.form.get('kode') # Ambil kode unik
+        # 1. Ambil data dari Form
+        kode = request.form.get('kode')
         nama = sanitize_string(request.form.get('nama_produk'))
         kategori = request.form.get('kategori')
         h_jual = parse_int(request.form.get('harga_jual'))
         h_beli = parse_int(request.form.get('harga_beli'))
-        h_beli_supp = parse_int(request.form.get('harga_beli_supplier') or 0) # Field supplier
+        h_beli_supp = parse_int(request.form.get('harga_beli_supplier') or 0)
         is_konsinyasi = bool(int(request.form.get('is_konsinyasi', 0)))
         
-        # Penanganan gambar
+        # PERBAIKAN: Ambil nilai stok dari form agar tidak undefined
+        stok_awal = parse_int(request.form.get('stok') or 0) 
+        
+        # 2. Penanganan Gambar (Source [1])
         file = request.files.get('gambar')
         filename = secure_filename(file.filename) if file and file.filename != '' else None
         if filename:
             file.save(os.path.join('static/uploads', filename))
+            print(f">>> [DEBUG] Gambar disimpan: {filename}")
 
-        # Proses Simpan (Commit) sesuai Source [1, 2]
-        # Proses simpan ke 3 tabel sekaligus tetap menggunakan 
-        # objek yang diimpor di atas
         try:
+            # 3. Buat Objek Produk
+            print(">>> [DEBUG] Membuat objek Produk...")
             produk_baru = Produk(
                 kode=kode,
                 nama_produk=nama,
@@ -77,25 +83,35 @@ def tambah_produk():
                 gambar=filename
             )
 
-            db.session.add(p_baru)
-            db.session.flush() 
+            # PERBAIKAN: Gunakan nama variabel yang konsisten (produk_baru)
+            db.session.add(produk_baru)
+            db.session.flush() # Mendapatkan ID produk tanpa commit dulu
+            print(f">>> [DEBUG] Produk berhasil di-flush. ID Baru: {produk_baru.id}")
 
-            # Inisialisasi dari models/stok.py
-            rekap = Stok(produk_id=p_baru.id, jumlah=stok_awal)
+            # 4. Inisialisasi Stok (Relasi)
+            rekap = Stok(produk_id=produk_baru.id, jumlah=stok_awal)
             db.session.add(rekap)
+            print(">>> [DEBUG] Inisialisasi tabel Stok...")
 
-            # Inisialisasi dari models/stok_harian.py
-            rincian = StokHarian(produk_id=p_baru.id, jumlah=stok_awal, keterangan="Stok Awal")
+            # 5. Catat Sejarah Stok Awal
+            rincian = StokHarian(produk_id=produk_baru.id, jumlah=stok_awal, keterangan="Stok Awal")
             db.session.add(rincian)
+            print(">>> [DEBUG] Mencatat StokHarian...")
 
-            db.session.commit() # Menulis data permanen ke SQLite
+            # 6. Simpan Permanen (Source [2, 3])
+            db.session.commit() 
+            print(">>> [DEBUG] COMMIT BERHASIL! Data tersimpan di SQLite.")
             flash(f'Produk {nama} berhasil disimpan!', 'success')
+            
+            print(f">>> [DEBUG] Data diterima: Nama={nama}, Kode={kode}, Stok={stok_awal}")           
         except Exception as e:
-            db.session.rollback()
+            print(f">>> [DEBUG] ERROR saat ambil data form: {e}")
+            db.session.rollback() # Batalkan semua jika ada satu saja yang gagal
             flash(f'Gagal menyimpan: {str(e)}', 'danger')
+            print(f">>> [DEBUG] !!! DATABASE ERROR !!!: {str(e)}")
 
+    print(">>> [DEBUG] Redirecting ke list_produk...\n")
     return redirect(url_for('produk.list_produk'))
-
 
 # update edit_produk juga biar bisa ganti gambar
 @produk.route('/edit/<int:id>', methods=['POST'])
@@ -129,15 +145,38 @@ def edit_produk(id):
 @produk.route('/hapus/<int:id>')
 @login_required
 def hapus_produk(id):
- produk = Produk.query.get_or_404(id)
- try:
-     db.session.delete(produk)
-     db.session.commit()
-     flash('Produk berhasil dihapus!', 'success')
- except Exception as e:
-     db.session.rollback()
-     flash(f'Error saat hapus produk: {e}', 'error')
- return redirect(url_for('produk.produk_list'))
+    print(f"\n>>> [DEBUG] Memulai proses hapus_produk ID: {id}")
+    
+    # 1. Cari produk, jika tidak ada langsung 404
+    produk = Produk.query.get_or_404(id)
+    nama_produk = produk.nama_produk # Simpan nama untuk pesan flash
+
+    try:
+        # 2. Hapus data di tabel Stok (Rekap)
+        print(f">>> [DEBUG] Menghapus data Stok untuk produk ID: {id}")
+        Stok.query.filter_by(produk_id=id).delete()
+
+        # 3. Hapus data di tabel StokHarian (Riwayat)
+        print(f">>> [DEBUG] Menghapus riwayat StokHarian untuk produk ID: {id}")
+        StokHarian.query.filter_by(produk_id=id).delete()
+
+        # 4. Hapus Produk utama
+        print(f">>> [DEBUG] Menghapus data Produk: {nama_produk}")
+        db.session.delete(produk)
+
+        # FINAL COMMIT
+        db.session.commit()
+        print(">>> [DEBUG] COMMIT BERHASIL! Produk dan relasinya terhapus.")
+        flash(f'Produk {nama_produk} berhasil dihapus!', 'success')
+
+    except Exception as e:
+        db.session.rollback()
+        print(f">>> [DEBUG] !!! GAGAL MENGHAPUS !!!: {str(e)}")
+        # Gunakan kategori 'danger' agar muncul warna merah di Bootstrap
+        flash(f'Gagal menghapus produk: {str(e)}', 'danger')
+
+    print(">>> [DEBUG] Redirecting ke list_produk...\n")
+    return redirect(url_for('produk.list_produk'))
 
 @produk.route('/restok', methods=['POST'])
 @login_required

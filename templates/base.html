@@ -10,7 +10,8 @@
     
     <!-- 2. Bootstrap CSS (WAJIB TETAP ADA JIKA MASIH PAKAI MODAL BOOTSTRAP) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
     <!-- 3. FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -31,7 +32,7 @@
     <!-- Navbar Bottom Tailwind -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] px-2 py-3 z-50">
         <div class="flex justify-around items-center max-w-lg mx-auto">
-            <a href="{{ url_for('penjualan.buat_order') }}" class="flex flex-col items-center text-gray-400 hover:text-indigo-600 transition group">
+            <a href="{{ url_for('penjualan.index_kasir') }}" class="flex flex-col items-center text-gray-400 hover:text-indigo-600 transition group">
                 <i class="fas fa-shopping-cart text-xl mb-1"></i>
                 <span class="text-[10px] font-medium">Order</span>
             </a>
@@ -43,9 +44,9 @@
                 <i class="fas fa-box text-xl mb-1"></i>
                 <span class="text-[10px] font-medium">Produk</span>
             </a>
-            <a href="#" class="flex flex-col items-center text-gray-400 hover:text-indigo-600 transition">
-                <i class="fas fa-user text-xl mb-1"></i>
-                <span class="text-[10px] font-medium">Profil</span>
+            <a href="{{ url_for('penjualan.riwayat_penjualan') }}" class="text-center text-decoration-none {% if request.endpoint == 'penjualan.riwayat_penjualan' %}text-primary fw-bold{% else %}text-muted{% endif %}">
+                <i class="bi bi-receipt d-block fs-4"></i>
+                <small>Riwayat</small>
             </a>
         </div>
     </nav>

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h4 class="fw-bold mb-3">Riwayat Transaksi</h4>
+    <div class="table-responsive">
+        <table class="table table-hover bg-white shadow-sm rounded align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>ID Nota</th>
+                <th>Waktu</th>
+                <th>Total</th>
+                <th>Status</th> <!-- Kolom Baru -->
+                <th class="text-center">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in daftar_penjualan %}
+            <tr>
+                <td class="fw-bold">#{{ t.id }}</td>
+                <td class="small">{{ t.tanggal.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td class="fw-bold">Rp {{ "{:,}".format(t.total_bayar) }}</td>
+                <td>
+                    <!-- Logika Warna Status -->
+                    {% if t.status == 'Lunas' %}
+                        <span class="badge bg-success">Lunas</span>
+                    {% elif t.status == 'Belum Lunas' %}
+                        <span class="badge bg-warning text-dark">Belum Bayar</span>
+                    {% else %}
+                        <span class="badge bg-info text-dark">{{ t.status }}</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <div class="d-flex justify-content-center gap-2">
+                        <!-- Tombol Cetak Nota -->
+                        <a href="{{ url_for('penjualan.cetak_nota', id=t.id) }}" 
+                           target="_blank" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-printer"></i> Cetak
+                        </a>
+
+                        <!-- Form Hapus -->
+                        <form action="{{ url_for('penjualan.hapus_transaksi', id=t.id) }}" method="POST" 
+                              onsubmit="return confirm('Hapus nota ini? Stok akan dikembalikan.');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i> Hapus
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center py-4">Belum ada transaksi.</td></tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

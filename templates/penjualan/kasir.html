@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+{% block title %}Kasir - Pesanan Baru{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Bagian Pilih Produk -->
+        <div class="col-md-7">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">Daftar Menu</h5>
+                    <div class="row row-cols-2 row-cols-lg-3 g-3">
+                        {% for p in produk_list %}
+                        <div class="col">
+                            <div class="card h-100 border-0 shadow-sm text-center p-2">
+                                <img src="{{ url_for('static', filename='uploads/' + (p.gambar or 'default.png')) }}" 
+                                     class="card-img-top rounded mx-auto" style="height: 100px; width: auto; object-fit: cover;">
+                                <div class="card-body p-2">
+                                    <p class="small mb-1 fw-bold">{{ p.nama_produk }}</p>
+                                    <p class="small text-primary mb-2">Rp {{ "{:,}".format(p.harga_jual) }}</p>
+                                    <button class="btn btn-sm btn-outline-primary w-100" 
+                                            onclick="tambahKeKeranjang('{{ p.id }}', '{{ p.nama_produk }}', '{{ p.harga_jual }}')">
+                                        + Tambah
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bagian Ringkasan Pesanan & Pembayaran -->
+        <div class="col-md-5">
+            <form action="{{ url_for('penjualan.edit_nota', id=nota.id) if edit_mode else url_for('penjualan.proses_transaksi') }}" method="POST">
+                <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3 text-success">Keranjang Pesanan</h5>
+                        
+                        <div class="row mb-3 g-2">
+                            <div class="col-6">
+                                <label class="small text-muted">Tipe Pesanan</label>
+                                <select name="tipe_pesanan" id="tipe_pesanan" class="form-select form-select-sm" required onchange="togglePembayaran()">
+                                    <option value="Makan di Tempat" {% if edit_mode and nota.tipe_pesanan == 'Makan di Tempat' %}selected{% endif %}>Makan di Tempat</option>
+                                    <option value="Take Away" {% if edit_mode and nota.tipe_pesanan == 'Take Away' %}selected{% endif %}>Take Away</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-muted">Nomor Meja</label>
+                                <!-- PERBAIKAN: Tambahkan value agar nomor meja lama muncul saat edit -->
+                                <input type="number" name="meja_id" class="form-control form-select-sm" 
+                                    value="{{ nota.meja_id if edit_mode else '' }}" placeholder="Opsional">
+                            </div>
+                        </div>
+
+                        <!-- PERBAIKAN: ID harus 'keranjang-body' agar sinkron dengan JavaScript -->
+                        <div id="keranjang-body" class="mb-3" style="max-height: 300px; overflow-y: auto;">
+                            <p class="text-muted small text-center italic" id="empty-msg">Belum ada item dipilih.</p>
+                        </div>
+
+                        <hr>
+                        <div class="d-flex justify-content-between fw-bold mb-3">
+                            <span>Total Tagihan:</span>
+                            <span class="text-primary" id="display-total">Rp 0</span>
+                            <input type="hidden" name="total_bayar" id="input-total" value="0">
+                        </div>
+
+                        <div class="mb-3" id="section-pembayaran">
+                            <label class="small text-muted fw-bold">Diterima (Tunai)</label>
+                            <input type="number" name="bayar" id="input-bayar" 
+                                class="form-control form-control-lg fw-bold text-success" 
+                                value="{{ nota.bayar if edit_mode else '' }}"
+                                placeholder="0" required oninput="hitungKembalian()">
+                        </div>
+                    
+                        <div class="d-flex justify-content-between small mb-3">
+                            <span>Kembalian:</span>
+                            <span id="display-kembalian">Rp 0</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 btn-lg shadow">
+                            <i class="bi bi-cart-check"></i> {{ 'Update & Lunasi' if edit_mode else 'Proses Transaksi' }}
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Card Perbandingan Data Awal (Hanya Muncul Saat Mode Edit) -->
+        {% if edit_mode %}
+        <div class="card shadow-sm border-0 mb-3 border-start border-4 border-info">
+            <div class="card-body">
+                <h6 class="fw-bold text-info mb-3">
+                    <i class="bi bi-clock-history"></i> Ringkasan Pesanan Asli (Nota #{{ nota.id }})
+                </h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-borderless mb-0" style="font-size: 0.85rem;">
+                        <thead class="text-muted border-bottom">
+                            <tr>
+                                <th>Menu</th>
+                                <th>Varian</th>
+                                <th class="text-end">Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detail in nota.items %}
+                            <tr>
+                                <td class="fw-bold">{{ detail.produk.nama_produk }}</td>
+                                <td><span class="badge bg-secondary opacity-75">{{ detail.varian }}</span></td>
+                                <td class="text-end">x{{ detail.qty }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-2 pt-2 border-top d-flex justify-content-between small text-muted">
+                    <span>Total Bayar Awal:</span>
+                    <span class="fw-bold">Rp {{ "{:,}".format(nota.total_bayar) }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+
+    let cart = [];
+
+    function tambahKeKeranjang(id, nama, harga) {
+        const emptyMsg = document.getElementById('empty-msg');
+        if (emptyMsg) emptyMsg.remove();
+
+            // PASTIKAN BARIS DI BAWAH INI MENGGUNAKAN 'keranjang-body'
+            const keranjang = document.getElementById('keranjang-body'); 
+            
+            if (!keranjang) {
+                console.error("Gagal menemukan elemen keranjang-body!");
+                return;
+            }
+        
+        // LOGIKA FILTER: Cek apakah produk butuh varian mie
+        const namaLower = nama.toLowerCase();
+        const butuhVarian = namaLower.includes('miso') || namaLower.includes('bakso');
+
+        let varianHTML = "";
+        if (butuhVarian) {
+            // Tampilkan Select jika itu Miso atau Bakso
+            varianHTML = `
+                <select name="varian[]" class="form-select form-select-sm bg-white" required onchange="updateTotal()">
+                    <option value="Mie Putih">Mie Putih</option>
+                    <option value="Mie Kuning">Mie Kuning</option>
+                    <option value="Mie Campur">Mie Campur</option>
+                    <option value="Intermie">Intermie</option>
+                    <option value="Mie Pansit">Mie Pansit (+1rb)</option>
+                    <option value="Kosong">Kosong</option>
+                </select>`;
+        } else {
+            // Kirim tanda "-" jika produk lain (Ayam Penyet, Minuman, dll)
+            varianHTML = `
+                <input type="hidden" name="varian[]" value="-">
+                <span class="text-muted small ms-2">Standar</span>`;
+        }
+
+        const itemRow = document.createElement('div');
+        // Tambahkan class 'item-keranjang' di sini agar bisa dideteksi oleh fungsi updateTotal()
+        itemRow.className = "card item-keranjang bg-light p-2 mb-2 border-0 shadow-sm";
+
+        itemRow.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="nama-produk fw-bold small text-truncate" style="max-width: 180px;">${nama}</span>
+                <span class="small fw-bold">Rp ${parseInt(harga).toLocaleString()}</span>
+                <input type="hidden" name="produk_id[]" value="${id}">
+            </div>
+            <div class="row g-2 align-items-center">
+                <!-- Kolom Varian (Kiri) -->
+                <div class="col-6">
+                    ${varianHTML}
+                </div>
+                <!-- Kolom Qty (Kanan) - Dibuat lebih lebar agar mudah diisi -->
+                <div class="col-4">
+                    <input type="number" name="qty[]" value="1" min="1" 
+                        class="form-control form-control-sm item-qty text-center" 
+                        style="width: 100%;"
+                        onchange="updateTotal()" data-harga="${harga}">
+                </div>
+                <!-- Tombol Hapus -->
+                <div class="col-2 text-end">
+                    <button type="button" class="btn btn-sm text-danger" onclick="this.closest('.card').remove(); updateTotal();">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        keranjang.appendChild(itemRow);
+        updateTotal();
+    }
+
+
+    function updateTotal() {
+        let total = 0;
+        // Kita ambil baris item-nya agar bisa mengakses qty, nama, dan varian sekaligus
+         const items = document.querySelectorAll('.item-keranjang');
+               
+            items.forEach(item => {
+            const qtyInput = item.querySelector('.item-qty');
+            if (!qtyInput) return; // Lewati jika bukan elemen pesanan
+
+            let qty = parseInt(qtyInput.value) || 0;
+            let hargaDasar = parseInt(qtyInput.getAttribute('data-harga')) || 0;
+            
+            // 1. Ambil Nama Produk & Varian untuk cek biaya tambahan [Riwayat]
+            const namaProduk = item.querySelector('.nama-produk')?.innerText || "";
+            const varianSelect = item.querySelector('select[name="varian[]"]');
+            const varian = varianSelect ? varianSelect.value : "";
+
+            let hargaFinal = hargaDasar;
+             
+            // 2. Logika Biaya Tambahan Rp 1.000 khusus Mie Pansit [Riwayat]
+            if (varian === 'Mie Pansit' && (namaProduk.includes('Miso') || namaProduk.includes('Bakso'))) {
+                hargaFinal += 1000;
+            }
+
+            total += (qty * hargaFinal);
+        });
+
+        // 3. Update Tampilan ke User (ID sesuai kode lama Anda)
+        document.getElementById('display-total').innerText = "Rp " + total.toLocaleString();
+        
+        // 4. Update Input Hidden untuk dikirim ke Backend [1]
+        document.getElementById('input-total').value = total;
+        
+        // 5. Hitung Kembalian secara live
+        hitungKembalian();
+    }
+
+    function togglePembayaran() {
+        const tipePesanan = document.getElementById('tipe_pesanan').value;
+        const inputBayar = document.getElementById('input-bayar'); // Sesuaikan ID di sini
+        const sectionPembayaran = document.getElementById('section-pembayaran');
+
+        if (tipePesanan === 'Makan di Tempat') {
+            // Hapus kewajiban mengisi agar tombol 'Proses' tidak terblokir
+            inputBayar.removeAttribute('required'); 
+            inputBayar.value = 0; 
+            sectionPembayaran.style.display = 'none'; // Sembunyikan agar kasir fokus ke pesanan
+        } else {
+            // Untuk Bungkus, wajib isi uang tunai di depan
+            inputBayar.setAttribute('required', 'required');
+            inputBayar.value = ""; 
+            sectionPembayaran.style.display = 'block';
+        }
+        hitungKembalian();
+    }
+
+    // Tambahkan ini agar saat halaman pertama kali dibuka, validasi langsung menyesuaikan
+    document.addEventListener('DOMContentLoaded', function() {
+            togglePembayaran();
+    });
+
+
+    function hitungKembalian() {
+        const total = parseInt(document.getElementById('input-total').value);
+        const bayar = parseInt(document.getElementById('input-bayar').value || 0);
+        const kembalian = bayar - total;
+
+        document.getElementById('display-kembalian').innerText = "Rp " + (kembalian >= 0 ? kembalian.toLocaleString() : 0);
+    }
+
+    function hapusItem(element) {
+        // Menghapus baris item dari tampilan keranjang
+        element.closest('.list-group-item').remove();
+        // Panggil fungsi hitung ulang total tagihan
+        updateTotal(); 
+    }
+
+    // 2. Skrip otomatisasi pengisian keranjang saat Mode Edit
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if edit_mode %}
+            console.log("Memasuki Mode Edit untuk Nota #{{ nota.id }}");
+
+            {% for detail in nota.items %}
+            
+            // TAMBAHKAN KURUNG KURAWAL DI SINI UNTUK MEMBUAT SCOPE BARU
+            {
+                tambahKeKeranjang(
+                    "{{ detail.produk_id }}", 
+                    "{{ detail.produk.nama_produk }}", 
+                    "{{ detail.produk.harga_jual }}"
+                );
+
+                // Sekarang variabel ini aman walaupun diulang berkali-kali
+                let rows = document.querySelectorAll('.item-keranjang');
+                let lastRow = rows[rows.length - 1];
+
+                if (lastRow) {
+                    // Gunakan querySelector yang aman untuk select maupun input hidden
+                    let vElement = lastRow.querySelector('[name="varian[]"]');
+                    let qElement = lastRow.querySelector('[name="qty[]"]');
+
+                    if (vElement) vElement.value = "{{ detail.varian }}";
+                    if (qElement) qElement.value = "{{ detail.qty }}";
+                }
+            } 
+            // TUTUP KURUNG KURAWAL
+            {% endfor %}
+
+            if (typeof updateTotal === "function") {
+                updateTotal();
+            }
+        {% endif %}
+    });
+    
+</script>
+{% endblock %}
+
+'''
+Penjelasan Perubahan:
+Iterasi Berbasis Baris (.list-group-item): Alih-alih hanya mengambil qtys, kode ini mengambil seluruh baris pesanan. 
+Ini penting agar sistem bisa membaca nilai dropdown Varian yang dipilih oleh kasir pada baris tersebut. 
+
+Deteksi Nama & Varian: Fungsi sekarang mengecek apakah teks nama produk mengandung kata "Miso" atau "Bakso". 
+Jika benar dan varian yang dipilih adalah "Mie Pansit", maka harga satuan (hargaFinal) ditambah Rp 1.000 sebelum dikalikan dengan jumlah beli (qty).
+
+Sinkronisasi input-total: Nilai total yang sudah termasuk biaya tambahan ini akan dikirim ke backend (penjualan_router.py), 
+sehingga laporan keuangan Anda akan akurat dan tidak ada selisih uang. 
+
+Otomatisasi: Pastikan pada elemen HTML <select> (Varian) 
+dan <input> (Qty) di keranjang Anda sudah terpasang atribut onchange="updateTotal()" 
+atau oninput="updateTotal()" agar angka di layar langsung berubah saat kasir mengganti pilihan. 
+
+'''

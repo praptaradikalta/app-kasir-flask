@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Tagihan Aktif - Kasir MBL{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold mb-0"><i class="bi bi-cash-stack text-success"></i> Tagihan Belum Bayar</h4>
+        <span class="badge bg-warning text-dark">Status: BELUM LUNAS</span>
+    </div>
+
+    <div class="row g-3">
+        {% for order in orders %}
+        <div class="col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm border-top border-4 border-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <!-- PERBAIKAN: Gunakan nomor_meja (sesuai database) [2] -->
+                        <h5 class="fw-bold mb-0">Meja {{ order.nomor_meja or '-' }}</h5>
+                        <span class="text-muted small">#{{ order.id }}</span>
+                    </div>
+                    <div class="small text-muted mb-3">
+                        <i class="bi bi-clock"></i> Masuk: {{ order.tanggal.strftime('%H:%M') }}
+                    </div>
+                    
+                    <div class="bg-light p-2 rounded mb-3">
+                        <table class="table table-borderless table-sm mb-0" style="font-size: 0.85rem;">
+                            {% for item in order.items %}
+                            <tr>
+                                <td>{{ item.qty }}x {{ item.produk.nama_produk }}</td>
+                                <!-- Pastikan item memiliki atribut subtotal atau gunakan (qty * harga_satuan) -->
+                                <td class="text-end text-muted">Rp {{ "{:,}".format(item.subtotal or (item.qty * item.harga_satuan)) }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr class="border-top">
+                                <td class="fw-bold">TOTAL TAGIHAN</td>
+                                <td class="text-end fw-bold text-primary">Rp {{ "{:,}".format(order.total_bayar) }}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('penjualan.cetak_nota', id=order.id) }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-printer"></i> Cetak Bon
+                        </a>
+                        <!-- Tombol Edit: Sekarang menggunakan order.id yang benar [1] -->
+                        <a href="{{ url_for('penjualan.edit_nota', id=order.id) }}" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-pencil-square"></i> Edit Order
+                        </a>
+                        <!-- Tombol Bayar: Sekarang mengarah ke kasir untuk pelunasan [1] -->
+                        <a href="{{ url_for('penjualan.edit_nota', id=order.id) }}" class="btn btn-success btn-sm fw-bold">
+                            <i class="bi bi-wallet2"></i> PROSES BAYAR
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-check2-circle display-1 text-muted opacity-25"></i>
+            <p class="text-muted mt-3">Tidak ada tagihan yang menggantung.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

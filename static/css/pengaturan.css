@@ -6,3 +6,18 @@ form label {
 form input[type="text"], form select {
   max-width: 300px;
 }
+
+.btn-manajemen-user {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background-color: #4f46e5;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.btn-manajemen-user:hover {
+  background-color: #4338ca;
+}

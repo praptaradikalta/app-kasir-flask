@@ -1,5 +1,19 @@
 # utils.py
 import bcrypt
+from functools import wraps
+from flask import flash, redirect, url_for
+from flask_login import current_user
+
+def admin_required(f):
+    """Batasi akses rute hanya untuk role admin/owner. Kasir akan ditolak."""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated or current_user.role not in ('admin', 'owner'):
+            flash('Kamu tidak punya akses ke halaman ini.', 'danger')
+            return redirect(url_for('user.dashboard'))
+        return f(*args, **kwargs)
+    return decorated
+
 def hash_password(password):
  return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 

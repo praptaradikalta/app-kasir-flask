@@ -20,9 +20,9 @@
 
   <nav class="bottom-nav">
     <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
-    <a href="{{ url_for('produk.produk_list') }}">Produk</a>
-    <a href="{{ url_for('penjualan.penjualan_list') }}">Penjualan</a>
-    <a href="{{ url_for('laporan.laporan_list') }}" class="active">Laporan</a>
+    <a href="{{ url_for('produk.list_produk') }}">Produk</a>
+    <a href="{{ url_for('penjualan.riwayat_penjualan') }}">Penjualan</a>
+    <a href="{{ url_for('laporan.laporan_harian') }}" class="active">Laporan</a>
     <a href="{{ url_for('pengaturan.pengaturan_list') }}">Pengaturan</a>
   </nav>
   <script src="{{ url_for('static', filename='js/menu.js') }}"></script>

@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+{% block title %}Resep & HPP: {{ produk.nama_produk }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header Page -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4>Resep & HPP: <strong>{{ produk.nama_produk }}</strong></h4>
+        <a href="{{ url_for('produk.list_produk') }}" class="btn btn-light btn-sm border shadow-sm">Kembali</a>
+    </div>
+
+    <!-- Ringkasan HPP & Harga Jual -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white border-0 shadow-sm">
+                <div class="card-body py-3 text-center">
+                    <small class="opacity-75 d-block">HPP Saat Ini (Modal Per Porsi)</small>
+                    <h2 class="fw-bold mb-0">Rp {{ "{:,.0f}".format(produk.harga_beli or 0) }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-light">
+                <div class="card-body py-3 text-center">
+                    <small class="text-muted d-block">Harga Jual Konsumen</small>
+                    <h2 class="fw-bold text-success mb-0">Rp {{ "{:,.0f}".format(produk.harga_jual or 0) }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="POST">
+        <!-- Pengaturan Batch Produksi -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h6 class="fw-bold text-dark mb-3"><i class="fas fa-layer-group me-2"></i>Target Produksi</h6>
+                <div class="row align-items-center">
+                    <div class="col-md-4">
+                        <label class="small text-muted mb-1 d-block">Resep ini untuk berapa porsi?</label>
+                        <div class="input-group">
+                            <input type="number" name="porsi_hasil" class="form-control" 
+                                   value="{{ resep.porsi_hasil if resep else 1 }}" required>
+                            <span class="input-group-text">Porsi</span>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="alert alert-info py-2 mb-0 mt-2 mt-md-0" style="font-size: 0.85rem;">
+                            <i class="fas fa-info-circle me-1"></i> 
+                            Isi <strong>1</strong> jika resep untuk satu porsi. Isi <strong>32</strong> atau <strong>80</strong> jika memasak dalam jumlah besar sekaligus.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel Bahan Baku Dinamis -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <h6 class="fw-bold text-dark mb-3"><i class="fas fa-mortar-pestle me-2"></i>Rincian Bahan yang Digunakan</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle border-top">
+                        <thead class="table-light">
+                            <tr class="small text-uppercase">
+                                <th style="min-width: 250px;">Nama Bahan</th>
+                                <th style="width: 180px;">Harga Satuan</th>
+                                <th style="width: 160px;">Jumlah (Qty)</th>
+                                <th style="width: 180px;" class="text-end">Total Modal</th>
+                                <th style="width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="resep-body">
+                            {% if resep and resep.detail %}
+                                {% for detail in resep.detail %}
+                                <tr class="bahan-row">
+                                    <td>
+                                        <select name="bahan_id[]" class="form-select select-bahan" onchange="updateRowLabels(this)">
+                                            <option value="">-- Pilih Bahan --</option>
+                                            {% for b in bahan_baku %}
+                                            <option value="{{ b.id }}" data-harga="{{ b.harga_beli_terakhir }}" data-satuan="{{ b.satuan }}"
+                                                {% if b.id == detail.bahan_id %}selected{% endif %}>
+                                                {{ b.nama_bahan }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <span class="text-muted small harga-satuan-label">
+                                            Rp {{ "{:,.0f}".format(detail.bahan.harga_beli_terakhir) }}/{{ detail.bahan.satuan }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" step="any" name="qty_pakai[]" class="form-control text-center input-qty" 
+                                                   value="{{ detail.qty_pakai }}" required oninput="calculateRowTotal(this)">
+                                            <span class="input-group-text satuan-label">{{ detail.bahan.satuan }}</span>
+                                        </div>
+                                        <a href="#" class="small text-decoration-none" onclick="return toggleKalkulatorQty(this)">
+                                            <i class="fas fa-calculator me-1"></i>Bantu hitung
+                                        </a>
+                                        <div class="kalkulator-qty-box d-none mt-2 p-2 border rounded bg-light" style="font-size: 0.8rem;">
+                                            <div class="mb-1">Saya potong/bagi total <input type="number" step="any" class="form-control form-control-sm d-inline-block kalk-total" style="width:70px;"> <span class="kalk-satuan-tag">{{ detail.bahan.satuan }}</span> jadi <input type="number" class="form-control form-control-sm d-inline-block kalk-bagian" style="width:60px;"> bagian sama besar.</div>
+                                            <div class="mb-2">Saya pakai <input type="number" step="any" class="form-control form-control-sm d-inline-block kalk-pakai" style="width:60px;" value="1"> bagian untuk resep ini.</div>
+                                            <button type="button" class="btn btn-primary btn-sm w-100" onclick="terapkanKalkulatorQty(this)">Terapkan ke Qty</button>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold small total-bahan-label">
+                                            Rp {{ "{:,.0f}".format(detail.bahan.harga_beli_terakhir * detail.qty_pakai) }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-link text-danger p-0" onclick="hapusBaris(this)">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <!-- Baris Kosong Default (Template) -->
+                                <tr class="bahan-row">
+                                    <td>
+                                        <select name="bahan_id[]" class="form-select select-bahan" onchange="updateRowLabels(this)">
+                                            <option value="">-- Pilih Bahan --</option>
+                                            {% for b in bahan_baku %}
+                                            <option value="{{ b.id }}" data-harga="{{ b.harga_beli_terakhir }}" data-satuan="{{ b.satuan }}">
+                                                {{ b.nama_bahan }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </td>
+                                    <td><span class="text-muted small harga-satuan-label">-</span></td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" step="any" name="qty_pakai[]" class="form-control text-center input-qty" placeholder="0" oninput="calculateRowTotal(this)">
+                                            <span class="input-group-text satuan-label">unit</span>
+                                        </div>
+                                        <a href="#" class="small text-decoration-none" onclick="return toggleKalkulatorQty(this)">
+                                            <i class="fas fa-calculator me-1"></i>Bantu hitung
+                                        </a>
+                                        <div class="kalkulator-qty-box d-none mt-2 p-2 border rounded bg-light" style="font-size: 0.8rem;">
+                                            <div class="mb-1">Saya potong/bagi total <input type="number" step="any" class="form-control form-control-sm d-inline-block kalk-total" style="width:70px;"> <span class="kalk-satuan-tag">unit</span> jadi <input type="number" class="form-control form-control-sm d-inline-block kalk-bagian" style="width:60px;"> bagian sama besar.</div>
+                                            <div class="mb-2">Saya pakai <input type="number" step="any" class="form-control form-control-sm d-inline-block kalk-pakai" style="width:60px;" value="1"> bagian untuk resep ini.</div>
+                                            <button type="button" class="btn btn-primary btn-sm w-100" onclick="terapkanKalkulatorQty(this)">Terapkan ke Qty</button>
+                                        </div>
+                                    </td>
+                                    <td class="text-end"><span class="fw-bold small total-bahan-label">Rp 0</span></td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-link text-danger p-0" onclick="hapusBaris(this)">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                        <!-- FOOTER UNTUK JUMLAH TOTAL HARGA -->
+                        <tfoot class="table-light border-top">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold">Total Modal Batch:</td>
+                                <td class="text-end"><span id="grand-total-label" class="fw-bold text-primary">Rp 0</span></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="tambahBaris()">
+                    <i class="fas fa-plus me-1"></i> Tambah Bahan
+                </button>
+            </div>
+        </div>
+
+        <!-- Tombol Simpan & Batal -->
+        <div class="d-flex gap-2 mb-5">
+            <button type="submit" class="btn btn-primary flex-grow-1 shadow-sm">
+                <i class="fas fa-save me-1"></i> Simpan & Hitung Ulang HPP
+            </button>
+            <a href="{{ url_for('produk.list_produk') }}" class="btn btn-outline-secondary px-4">
+                Batal
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+// Panggil hitung otomatis saat halaman dimuat
+document.addEventListener('DOMContentLoaded', updateAllTotals);
+
+function updateAllTotals() {
+    document.querySelectorAll('.input-qty').forEach(input => {
+        try {
+            calculateRowTotal(input);
+        } catch (err) {
+            // Jangan biarkan 1 baris error bikin baris lain & grand total ikut gagal dihitung
+            console.error('Gagal menghitung salah satu baris resep:', err, input);
+        }
+    });
+    // Jaminan tambahan: pastikan grand total tetap ter-update walau ada baris yang gagal di atas
+    updateGrandTotal();
+}
+
+// 1. Update Label Harga dan Satuan secara Real-time
+function updateRowLabels(select) {
+    const row = select.closest('tr');
+    const option = select.options[select.selectedIndex];
+    
+    if (!option.value) {
+        row.querySelector('.harga-satuan-label').textContent = "-";
+        row.querySelector('.satuan-label').textContent = "unit";
+        row.querySelector('.total-bahan-label').textContent = "Rp 0";
+        return;
+    }
+
+    const harga = option.getAttribute('data-harga') || 0;
+    const satuan = option.getAttribute('data-satuan') || '-';
+
+    row.querySelector('.harga-satuan-label').textContent = `Rp ${Number(harga).toLocaleString('id-ID')}/${satuan}`;
+    row.querySelector('.satuan-label').textContent = satuan;
+    const kalkTag = row.querySelector('.kalk-satuan-tag');
+    if (kalkTag) kalkTag.textContent = satuan;
+    
+    // Langsung hitung total harga baris tersebut
+    calculateRowTotal(row.querySelector('.input-qty'));
+}
+
+// 2. Hitung Total Harga per Baris (Harga * Qty)
+function calculateRowTotal(input) {
+    const row = input.closest('tr');
+    const select = row.querySelector('.select-bahan');
+    const selectedOption = select.options[select.selectedIndex];
+    const hargaSatuan = parseFloat(selectedOption?.getAttribute('data-harga')) || 0;
+    const qty = parseFloat(input.value) || 0;
+    const total = hargaSatuan * qty;
+    
+    row.querySelector('.total-bahan-label').textContent = `Rp ${total.toLocaleString('id-ID')}`;
+    updateGrandTotal();    
+}
+
+// 2b. Jumlahkan semua Total Modal per baris jadi Grand Total Batch
+//     (fungsi ini sebelumnya dipanggil tapi belum pernah didefinisikan)
+function updateGrandTotal() {
+    let grandTotal = 0;
+    document.querySelectorAll('.bahan-row').forEach(row => {
+        const select = row.querySelector('.select-bahan');
+        const qtyInput = row.querySelector('.input-qty');
+        const hargaSatuan = parseFloat(select.options[select.selectedIndex]?.getAttribute('data-harga')) || 0;
+        const qty = parseFloat(qtyInput.value) || 0;
+        grandTotal += hargaSatuan * qty;
+    });
+    document.getElementById('grand-total-label').textContent = `Rp ${grandTotal.toLocaleString('id-ID')}`;
+}
+
+// 3. Perbaikan fungsi Tambah Baris (Fix cloneNode error)
+function tambahBaris() {
+    const tbody = document.getElementById('resep-body');
+    const firstRow = tbody.querySelector('.bahan-row');
+    
+    if (firstRow) {
+        const newRow = firstRow.cloneNode(true); 
+        
+        // Reset isi input, select, dan label pada baris baru
+        newRow.querySelectorAll('input').forEach(i => i.value = "");
+        newRow.querySelector('select').value = "";
+        newRow.querySelector('.harga-satuan-label').textContent = "-";
+        newRow.querySelector('.satuan-label').textContent = "unit";
+        newRow.querySelector('.total-bahan-label').textContent = "Rp 0";
+
+        // Reset juga kalkulator bantu qty: sembunyikan lagi, satuan tag balik ke "unit"
+        const kalkBox = newRow.querySelector('.kalkulator-qty-box');
+        if (kalkBox) {
+            kalkBox.classList.add('d-none');
+            kalkBox.querySelector('.kalk-pakai').value = 1;
+        }
+        const kalkTag = newRow.querySelector('.kalk-satuan-tag');
+        if (kalkTag) kalkTag.textContent = 'unit';
+        
+        tbody.appendChild(newRow);
+    }
+}
+
+// 5. Kalkulator bantu isi Qty: "saya potong/bagi total X jadi N bagian, pakai Y bagian"
+//    -> qty = X * (Y / N). Bahan baku TETAP disimpan pakai satuan besar (kg/liter),
+//    cuma bantu itung angka pecahannya aja, biar update harga per kg tetap otomatis
+//    kepakai ke semua resep (nggak jadi harga beku kayak kalau bikin satuan "potong" sendiri).
+function toggleKalkulatorQty(link) {
+    const box = link.nextElementSibling;
+    box.classList.toggle('d-none');
+    return false; // cegah link # pindah scroll ke atas
+}
+
+function terapkanKalkulatorQty(btn) {
+    const box = btn.closest('.kalkulator-qty-box');
+    const row = btn.closest('tr');
+
+    const total = parseFloat(box.querySelector('.kalk-total').value) || 0;
+    const bagian = parseFloat(box.querySelector('.kalk-bagian').value) || 0;
+    const pakai = parseFloat(box.querySelector('.kalk-pakai').value) || 0;
+
+    if (total <= 0 || bagian <= 0 || pakai <= 0) {
+        alert('Isi dulu semua kolom kalkulatornya (harus lebih dari 0).');
+        return;
+    }
+
+    const qty = Math.round((total * (pakai / bagian)) * 10000) / 10000; // bulatkan 4 desimal, hindari sisa floating-point
+    const qtyInput = row.querySelector('.input-qty');
+    qtyInput.value = qty;
+    calculateRowTotal(qtyInput);
+
+    box.classList.add('d-none');
+}
+
+// 4. Fungsi Hapus Baris (Sisa minimal 1 baris)
+function hapusBaris(btn) {
+    const row = btn.closest('tr');
+    const totalRows = document.querySelectorAll('.bahan-row').length;
+    
+    if (totalRows > 1) {
+        row.remove();
+        updateGrandTotal();
+    } else {
+        alert("Resep minimal harus memiliki satu komponen bahan.");
+    }
+}
+</script>
+{% endblock %}

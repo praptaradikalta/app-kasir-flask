@@ -3,12 +3,26 @@
 {% block title %}Daftar Produk - Kasir MBL{% endblock %}
 
 {% block content %}
+<!-- ALERT STOK MENIPIS -->
+{% if produk_menipis %}
+<div class="alert alert-warning d-flex align-items-start gap-3 mb-4" role="alert">
+    <i class="fas fa-triangle-exclamation fs-4 mt-1"></i>
+    <div>
+        <strong>{{ produk_menipis|length }} produk stoknya menipis</strong> (di bawah {{ batas_stok_menipis }} pcs):
+        {{ produk_menipis|map(attribute='nama_produk')|join(', ') }}
+    </div>
+</div>
+{% endif %}
+
 <!-- HEADER & NAVIGASI KATEGORI -->
 <div class="mb-6">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-3xl font-bold text-emerald-800">Produk MBL</h1>
             <p class="text-sm text-gray-500">Kelola data menu dan stok barang Anda.</p>
+            <a href="{{ url_for('produk.riwayat_stok') }}" class="text-xs text-indigo-600 fw-semibold">
+                <i class="fas fa-clock-rotate-left me-1"></i>Lihat Riwayat Stok
+            </a>
         </div>
         
         <div class="flex gap-3">
@@ -97,6 +111,12 @@
                                         class="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition" title="Restok">
                                     <i class="fas fa-boxes"></i>
                                 </button>
+                                {% if not p.is_konsinyasi and p.kategori in ['Makanan', 'Minuman'] %}
+                                <a href="{{ url_for('resep.kelola_resep', produk_id=p.id) }}"
+                                   class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition" title="Kelola Resep & HPP">
+                                    <i class="fas fa-flask"></i>
+                                </a>
+                                {% endif %}
                                 <!-- Edit & Hapus -->
                                 <div class="flex justify-center gap-2">
                                 <!-- Tombol Edit (Memicu Modal) -->

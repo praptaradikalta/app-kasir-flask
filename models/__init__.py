@@ -13,3 +13,4 @@ from .resep import Resep
 from .hutang_supplier import HutangSupplier
 from .resep_detail import ResepDetail
 from .stok_harian_model import StokHarian
+from .pengaturan_model import Pengaturan

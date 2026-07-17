@@ -33,6 +33,9 @@ def create_app():
     from routers.penjualan_router import penjualan as penjualan_bp
     from routers.laporan_router import laporan as laporan_bp
     from routers.pengaturan_router import pengaturan as pengaturan_bp
+    from routers.bukukas_router import bukukas as bukukas_bp
+    from routers.bahanbaku_router import bahanbaku as bahanbaku_bp
+    from routers.resep_router import resep_bp
 
     # Mendaftarkan blueprint dengan prefix jika diperlukan
     app.register_blueprint(user_bp)
@@ -40,6 +43,9 @@ def create_app():
     app.register_blueprint(penjualan_bp, url_prefix='/penjualan')
     app.register_blueprint(laporan_bp, url_prefix='/laporan')
     app.register_blueprint(pengaturan_bp, url_prefix='/pengaturan')
+    app.register_blueprint(bukukas_bp, url_prefix='/kas')
+    app.register_blueprint(bahanbaku_bp, url_prefix='/bahan-baku')
+    app.register_blueprint(resep_bp, url_prefix='/resep')
 
     return app
 

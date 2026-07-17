@@ -32,6 +32,8 @@ class Produk(db.Model):
     def update_hpp(self):
         """Hitung HPP otomatis kalo ada resep"""
         if self.kategori in ['Makanan', 'Minuman'] and self.resep and not self.is_konsinyasi:
+            if not self.resep.porsi_hasil:
+                return
             total_hpp_batch = sum(
                 d.qty_pakai * d.bahan.harga_beli_terakhir for d in self.resep.detail
             )

@@ -3,11 +3,19 @@
 
 {% block content %}
 <div class="container mt-4">
+<<<<<<< HEAD
+=======
+    <!-- Header Page -->
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h4>Resep & HPP: <strong>{{ produk.nama_produk }}</strong></h4>
         <a href="{{ url_for('produk.list_produk') }}" class="btn btn-light btn-sm border shadow-sm">Kembali</a>
     </div>
 
+<<<<<<< HEAD
+=======
+    <!-- Ringkasan HPP & Harga Jual -->
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
     <div class="row mb-4 g-3">
         <div class="col-md-6">
             <div class="card bg-primary text-white border-0 shadow-sm">
@@ -27,6 +35,7 @@
         </div>
     </div>
 
+<<<<<<< HEAD
     <div class="alert alert-light border d-flex justify-content-between align-items-center mb-3 py-2" style="font-size: 0.85rem;">
         <span>
             <i class="fas fa-circle-info me-1"></i>
@@ -38,6 +47,10 @@
     </div>
 
     <form method="POST">
+=======
+    <form method="POST">
+        <!-- Pengaturan Batch Produksi -->
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body">
                 <h6 class="fw-bold text-dark mb-3"><i class="fas fa-layer-group me-2"></i>Target Produksi</h6>
@@ -60,6 +73,10 @@
             </div>
         </div>
 
+<<<<<<< HEAD
+=======
+        <!-- Tabel Bahan Baku Dinamis -->
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
         <div class="card shadow-sm border-0 mb-4">
             <div class="card-body">
                 <h6 class="fw-bold text-dark mb-3"><i class="fas fa-mortar-pestle me-2"></i>Rincian Bahan yang Digunakan</h6>
@@ -67,7 +84,11 @@
                     <table class="table table-hover align-middle border-top">
                         <thead class="table-light">
                             <tr class="small text-uppercase">
+<<<<<<< HEAD
                                 <th style="min-width: 250px;">Nama Bahan / Racikan</th>
+=======
+                                <th style="min-width: 250px;">Nama Bahan</th>
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
                                 <th style="width: 180px;">Harga Satuan</th>
                                 <th style="width: 160px;">Jumlah (Qty)</th>
                                 <th style="width: 180px;" class="text-end">Total Modal</th>
@@ -79,6 +100,7 @@
                                 {% for detail in resep.detail %}
                                 <tr class="bahan-row">
                                     <td>
+<<<<<<< HEAD
                                         <select name="sumber_id[]" class="form-select select-bahan" onchange="updateRowLabels(this)">
                                             <option value="">-- Pilih Bahan/Racikan --</option>
                                             <optgroup label="Bahan Baku">
@@ -97,22 +119,41 @@
                                             </option>
                                             {% endfor %}
                                             </optgroup>
+=======
+                                        <select name="bahan_id[]" class="form-select select-bahan" onchange="updateRowLabels(this)">
+                                            <option value="">-- Pilih Bahan --</option>
+                                            {% for b in bahan_baku %}
+                                            <option value="{{ b.id }}" data-harga="{{ b.harga_beli_terakhir }}" data-satuan="{{ b.satuan }}"
+                                                {% if b.id == detail.bahan_id %}selected{% endif %}>
+                                                {{ b.nama_bahan }}
+                                            </option>
+                                            {% endfor %}
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
                                         </select>
                                     </td>
                                     <td>
                                         <span class="text-muted small harga-satuan-label">
+<<<<<<< HEAD
                                             Rp {{ "{:,.0f}".format(detail.harga_satuan_sumber) }}/{{ detail.bahan.satuan if detail.bahan_id else detail.racikan_dipakai.satuan_hasil }}
+=======
+                                            Rp {{ "{:,.0f}".format(detail.bahan.harga_beli_terakhir) }}/{{ detail.bahan.satuan }}
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
                                         </span>
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm">
                                             <input type="number" step="any" name="qty_pakai[]" class="form-control text-center input-qty" 
                                                    value="{{ detail.qty_pakai }}" required oninput="calculateRowTotal(this)">
+<<<<<<< HEAD
                                             <span class="input-group-text satuan-label">{{ detail.bahan.satuan if detail.bahan_id else detail.racikan_dipakai.satuan_hasil }}</span>
+=======
+                                            <span class="input-group-text satuan-label">{{ detail.bahan.satuan }}</span>
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
                                         </div>
                                         <a href="#" class="small text-decoration-none" onclick="return toggleKalkulatorQty(this)">
                                             <i class="fas fa-calculator me-1"></i>Bantu hitung
                                         </a>
+<<<<<<< HEAD
                                         <div class="kalkulator-qty-box d-none mt-2 p-3 border border-primary border-2 rounded bg-primary-subtle" style="font-size: 0.8rem;">
                                             <div class="fw-bold text-primary mb-2"><i class="fas fa-calculator me-1"></i>Kalkulator Bantu Hitung</div>
                                             <div class="mb-2">
@@ -130,12 +171,21 @@
                                                 <label class="d-block fw-semibold mb-1">Dipakai berapa bagian utk resep ini? <span class="text-danger">*</span></label>
                                                 <input type="number" step="any" class="form-control form-control-sm border-primary kalk-pakai" value="1">
                                             </div>
+=======
+                                        <div class="kalkulator-qty-box d-none mt-2 p-2 border rounded bg-light" style="font-size: 0.8rem;">
+                                            <div class="mb-1">Saya potong/bagi total <input type="number" step="any" class="form-control form-control-sm d-inline-block kalk-total" style="width:70px;"> <span class="kalk-satuan-tag">{{ detail.bahan.satuan }}</span> jadi <input type="number" class="form-control form-control-sm d-inline-block kalk-bagian" style="width:60px;"> bagian sama besar.</div>
+                                            <div class="mb-2">Saya pakai <input type="number" step="any" class="form-control form-control-sm d-inline-block kalk-pakai" style="width:60px;" value="1"> bagian untuk resep ini.</div>
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
                                             <button type="button" class="btn btn-primary btn-sm w-100" onclick="terapkanKalkulatorQty(this)">Terapkan ke Qty</button>
                                         </div>
                                     </td>
                                     <td class="text-end">
                                         <span class="fw-bold small total-bahan-label">
+<<<<<<< HEAD
                                             Rp {{ "{:,.0f}".format(detail.harga_satuan_sumber * detail.qty_pakai) }}
+=======
+                                            Rp {{ "{:,.0f}".format(detail.bahan.harga_beli_terakhir * detail.qty_pakai) }}
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
                                         </span>
                                     </td>
                                     <td class="text-center">
@@ -146,6 +196,7 @@
                                 </tr>
                                 {% endfor %}
                             {% else %}
+<<<<<<< HEAD
                                 <tr class="bahan-row">
                                     <td>
                                         <select name="sumber_id[]" class="form-select select-bahan" onchange="updateRowLabels(this)">
@@ -164,6 +215,18 @@
                                             </option>
                                             {% endfor %}
                                             </optgroup>
+=======
+                                <!-- Baris Kosong Default (Template) -->
+                                <tr class="bahan-row">
+                                    <td>
+                                        <select name="bahan_id[]" class="form-select select-bahan" onchange="updateRowLabels(this)">
+                                            <option value="">-- Pilih Bahan --</option>
+                                            {% for b in bahan_baku %}
+                                            <option value="{{ b.id }}" data-harga="{{ b.harga_beli_terakhir }}" data-satuan="{{ b.satuan }}">
+                                                {{ b.nama_bahan }}
+                                            </option>
+                                            {% endfor %}
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
                                         </select>
                                     </td>
                                     <td><span class="text-muted small harga-satuan-label">-</span></td>
@@ -175,6 +238,7 @@
                                         <a href="#" class="small text-decoration-none" onclick="return toggleKalkulatorQty(this)">
                                             <i class="fas fa-calculator me-1"></i>Bantu hitung
                                         </a>
+<<<<<<< HEAD
                                         <div class="kalkulator-qty-box d-none mt-2 p-3 border border-primary border-2 rounded bg-primary-subtle" style="font-size: 0.8rem;">
                                             <div class="fw-bold text-primary mb-2"><i class="fas fa-calculator me-1"></i>Kalkulator Bantu Hitung</div>
                                             <div class="mb-2">
@@ -192,6 +256,11 @@
                                                 <label class="d-block fw-semibold mb-1">Dipakai berapa bagian utk resep ini? <span class="text-danger">*</span></label>
                                                 <input type="number" step="any" class="form-control form-control-sm border-primary kalk-pakai" value="1">
                                             </div>
+=======
+                                        <div class="kalkulator-qty-box d-none mt-2 p-2 border rounded bg-light" style="font-size: 0.8rem;">
+                                            <div class="mb-1">Saya potong/bagi total <input type="number" step="any" class="form-control form-control-sm d-inline-block kalk-total" style="width:70px;"> <span class="kalk-satuan-tag">unit</span> jadi <input type="number" class="form-control form-control-sm d-inline-block kalk-bagian" style="width:60px;"> bagian sama besar.</div>
+                                            <div class="mb-2">Saya pakai <input type="number" step="any" class="form-control form-control-sm d-inline-block kalk-pakai" style="width:60px;" value="1"> bagian untuk resep ini.</div>
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
                                             <button type="button" class="btn btn-primary btn-sm w-100" onclick="terapkanKalkulatorQty(this)">Terapkan ke Qty</button>
                                         </div>
                                     </td>
@@ -204,6 +273,10 @@
                                 </tr>
                             {% endif %}
                         </tbody>
+<<<<<<< HEAD
+=======
+                        <!-- FOOTER UNTUK JUMLAH TOTAL HARGA -->
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
                         <tfoot class="table-light border-top">
                             <tr>
                                 <td colspan="3" class="text-end fw-bold">Total Modal Batch:</td>
@@ -219,6 +292,10 @@
             </div>
         </div>
 
+<<<<<<< HEAD
+=======
+        <!-- Tombol Simpan & Batal -->
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
         <div class="d-flex gap-2 mb-5">
             <button type="submit" class="btn btn-primary flex-grow-1 shadow-sm">
                 <i class="fas fa-save me-1"></i> Simpan & Hitung Ulang HPP
@@ -233,6 +310,11 @@
 
 {% block scripts %}
 <script>
+<<<<<<< HEAD
+=======
+
+// Panggil hitung otomatis saat halaman dimuat
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 document.addEventListener('DOMContentLoaded', updateAllTotals);
 
 function updateAllTotals() {
@@ -240,12 +322,24 @@ function updateAllTotals() {
         try {
             calculateRowTotal(input);
         } catch (err) {
+<<<<<<< HEAD
             console.error('Gagal menghitung salah satu baris resep:', err, input);
         }
     });
     updateGrandTotal();
 }
 
+=======
+            // Jangan biarkan 1 baris error bikin baris lain & grand total ikut gagal dihitung
+            console.error('Gagal menghitung salah satu baris resep:', err, input);
+        }
+    });
+    // Jaminan tambahan: pastikan grand total tetap ter-update walau ada baris yang gagal di atas
+    updateGrandTotal();
+}
+
+// 1. Update Label Harga dan Satuan secara Real-time
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 function updateRowLabels(select) {
     const row = select.closest('tr');
     const option = select.options[select.selectedIndex];
@@ -265,9 +359,17 @@ function updateRowLabels(select) {
     const kalkTag = row.querySelector('.kalk-satuan-tag');
     if (kalkTag) kalkTag.textContent = satuan;
     
+<<<<<<< HEAD
     calculateRowTotal(row.querySelector('.input-qty'));
 }
 
+=======
+    // Langsung hitung total harga baris tersebut
+    calculateRowTotal(row.querySelector('.input-qty'));
+}
+
+// 2. Hitung Total Harga per Baris (Harga * Qty)
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 function calculateRowTotal(input) {
     const row = input.closest('tr');
     const select = row.querySelector('.select-bahan');
@@ -280,6 +382,11 @@ function calculateRowTotal(input) {
     updateGrandTotal();    
 }
 
+<<<<<<< HEAD
+=======
+// 2b. Jumlahkan semua Total Modal per baris jadi Grand Total Batch
+//     (fungsi ini sebelumnya dipanggil tapi belum pernah didefinisikan)
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 function updateGrandTotal() {
     let grandTotal = 0;
     document.querySelectorAll('.bahan-row').forEach(row => {
@@ -292,6 +399,10 @@ function updateGrandTotal() {
     document.getElementById('grand-total-label').textContent = `Rp ${grandTotal.toLocaleString('id-ID')}`;
 }
 
+<<<<<<< HEAD
+=======
+// 3. Perbaikan fungsi Tambah Baris (Fix cloneNode error)
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 function tambahBaris() {
     const tbody = document.getElementById('resep-body');
     const firstRow = tbody.querySelector('.bahan-row');
@@ -299,12 +410,20 @@ function tambahBaris() {
     if (firstRow) {
         const newRow = firstRow.cloneNode(true); 
         
+<<<<<<< HEAD
+=======
+        // Reset isi input, select, dan label pada baris baru
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
         newRow.querySelectorAll('input').forEach(i => i.value = "");
         newRow.querySelector('select').value = "";
         newRow.querySelector('.harga-satuan-label').textContent = "-";
         newRow.querySelector('.satuan-label').textContent = "unit";
         newRow.querySelector('.total-bahan-label').textContent = "Rp 0";
 
+<<<<<<< HEAD
+=======
+        // Reset juga kalkulator bantu qty: sembunyikan lagi, satuan tag balik ke "unit"
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
         const kalkBox = newRow.querySelector('.kalkulator-qty-box');
         if (kalkBox) {
             kalkBox.classList.add('d-none');
@@ -317,16 +436,28 @@ function tambahBaris() {
     }
 }
 
+<<<<<<< HEAD
 function toggleKalkulatorQty(link) {
     const box = link.nextElementSibling;
     box.classList.toggle('d-none');
     return false;
+=======
+// 5. Kalkulator bantu isi Qty: "saya potong/bagi total X jadi N bagian, pakai Y bagian"
+//    -> qty = X * (Y / N). Bahan baku TETAP disimpan pakai satuan besar (kg/liter),
+//    cuma bantu itung angka pecahannya aja, biar update harga per kg tetap otomatis
+//    kepakai ke semua resep (nggak jadi harga beku kayak kalau bikin satuan "potong" sendiri).
+function toggleKalkulatorQty(link) {
+    const box = link.nextElementSibling;
+    box.classList.toggle('d-none');
+    return false; // cegah link # pindah scroll ke atas
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 }
 
 function terapkanKalkulatorQty(btn) {
     const box = btn.closest('.kalkulator-qty-box');
     const row = btn.closest('tr');
 
+<<<<<<< HEAD
     const inputTotal = box.querySelector('.kalk-total');
     const inputBagian = box.querySelector('.kalk-bagian');
     const inputPakai = box.querySelector('.kalk-pakai');
@@ -350,6 +481,18 @@ function terapkanKalkulatorQty(btn) {
     }
 
     const qty = Math.round((total * (pakai / bagian)) * 10000) / 10000;
+=======
+    const total = parseFloat(box.querySelector('.kalk-total').value) || 0;
+    const bagian = parseFloat(box.querySelector('.kalk-bagian').value) || 0;
+    const pakai = parseFloat(box.querySelector('.kalk-pakai').value) || 0;
+
+    if (total <= 0 || bagian <= 0 || pakai <= 0) {
+        alert('Isi dulu semua kolom kalkulatornya (harus lebih dari 0).');
+        return;
+    }
+
+    const qty = Math.round((total * (pakai / bagian)) * 10000) / 10000; // bulatkan 4 desimal, hindari sisa floating-point
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
     const qtyInput = row.querySelector('.input-qty');
     qtyInput.value = qty;
     calculateRowTotal(qtyInput);
@@ -357,6 +500,10 @@ function terapkanKalkulatorQty(btn) {
     box.classList.add('d-none');
 }
 
+<<<<<<< HEAD
+=======
+// 4. Fungsi Hapus Baris (Sisa minimal 1 baris)
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 function hapusBaris(btn) {
     const row = btn.closest('tr');
     const totalRows = document.querySelectorAll('.bahan-row').length;
@@ -369,4 +516,8 @@ function hapusBaris(btn) {
     }
 }
 </script>
+<<<<<<< HEAD
 {% endblock %}
+=======
+{% endblock %}
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba

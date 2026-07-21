@@ -7,6 +7,7 @@ from models.penjualan import Penjualan
 from models.penjualan_detail import PenjualanDetail
 from models.stok import Stok
 from models.stok_harian_model import StokHarian
+from models.bukukas import BukuKas
 
 penjualan = Blueprint('penjualan', __name__, url_prefix='/penjualan')
 
@@ -187,11 +188,18 @@ def edit_nota(id):
         if not produk_ids:
             print("[DEBUG POST] PERINGATAN: Tidak ada produk yang diterima dari form!")
 
+        # --- Hitung qty LAMA per produk (sebelum diedit), untuk keperluan
+        #     penyesuaian stok. Wajib diambil SEBELUM detail lama dihapus.
+        qty_lama_per_produk = {}
+        for d in PenjualanDetail.query.filter_by(penjualan_id=id).all():
+            qty_lama_per_produk[d.produk_id] = qty_lama_per_produk.get(d.produk_id, 0) + d.qty
+
         # 1. Hapus detail lama agar tidak ganda
         PenjualanDetail.query.filter_by(penjualan_id=id).delete()
         print(f"[DEBUG POST] Menghapus detail lama untuk nota #{id}")
         
         total_baru = 0
+        qty_baru_per_produk = {}
         for i in range(len(produk_ids)):
             p_id = int(produk_ids[i])
             p_qty = int(qtys[i])
@@ -205,6 +213,7 @@ def edit_nota(id):
             
             subtotal = harga_item * p_qty
             total_baru += subtotal
+            qty_baru_per_produk[p_id] = qty_baru_per_produk.get(p_id, 0) + p_qty
             
             print(f"   -> Item {i+1}: {produk_obj.nama_produk} | Varian: {p_varian} | Qty: {p_qty} | Subtotal: {subtotal}")
             
@@ -212,12 +221,57 @@ def edit_nota(id):
             detail = PenjualanDetail(penjualan_id=id, produk_id=p_id, qty=p_qty, 
                                      harga_satuan=harga_item, varian=p_varian)
             db.session.add(detail)
+
+        # --- Sesuaikan stok berdasarkan SELISIH qty lama vs qty baru ---
+        # Kalau qty nambah (mis. 2 -> 5): stok DIKURANGI 3 (barang tambahan terjual).
+        # Kalau qty berkurang (mis. 5 -> 2): stok DIKEMBALIKAN 3 (batal terjual).
+        semua_produk_id = set(qty_lama_per_produk.keys()) | set(qty_baru_per_produk.keys())
+        for p_id in semua_produk_id:
+            qty_lama = qty_lama_per_produk.get(p_id, 0)
+            qty_baru = qty_baru_per_produk.get(p_id, 0)
+            selisih = qty_baru - qty_lama  # positif = tambah terjual, negatif = dibatalkan
+
+            if selisih == 0:
+                continue
+
+            stok_item = Stok.query.filter_by(produk_id=p_id).first()
+            if stok_item:
+                stok_item.jumlah -= selisih
+
+            riwayat = StokHarian(
+                produk_id=p_id,
+                jumlah=-selisih,
+                keterangan=f'Edit Order Nota #{id}' + (' (tambah item)' if selisih > 0 else ' (kurangi item)')
+            )
+            db.session.add(riwayat)
         
         nota.total_bayar = total_baru
+
+        # Kalau form ini dibuka dari tombol "PROSES BAYAR", catat pembayarannya
+        # dan tandai transaksi sebagai Lunas. Kalau cuma "Edit Order" biasa,
+        # status transaksi tidak diubah (tetap Belum Lunas / apa adanya).
+        aksi = request.args.get('aksi')
+        if aksi == 'bayar':
+            uang_diterima = int(request.form.get('bayar', 0))
+            nota.bayar = uang_diterima
+            nota.kembalian = uang_diterima - total_baru
+            nota.status = 'Lunas'
+            print(f"[DEBUG POST] Pelunasan diproses. Bayar: {uang_diterima}, Kembalian: {nota.kembalian}")
+
+            # Catat otomatis ke Buku Kas sebagai kas masuk dari transaksi penjualan
+            kas_masuk = BukuKas(
+                user_id=current_user.id,
+                penjualan_id=nota.id,
+                jenis='masuk',
+                keterangan=f'Penjualan Meja {nota.meja_id} (Nota #{nota.id})',
+                jumlah=total_baru
+            )
+            db.session.add(kas_masuk)
+
         db.session.commit()
         print(f"[DEBUG POST] Sukses Update! Total Bayar Akhir: Rp {total_baru}")
         
-        flash('Nota berhasil diperbarui!', 'success')
+        flash('Pembayaran berhasil diproses!' if aksi == 'bayar' else 'Nota berhasil diperbarui!', 'success')
         return redirect(url_for('penjualan.daftar_tagihan'))
         
     # Logika untuk tampilan (GET)
@@ -233,7 +287,8 @@ def edit_nota(id):
     return render_template('penjualan/kasir.html', 
                            edit_mode=True, 
                            nota=nota, 
-                           produk_list=produk_list)
+                           produk_list=produk_list,
+                           mode_bayar=(request.args.get('aksi') == 'bayar'))
 
 @penjualan.route('/hapus/<int:id>', methods=['POST'])
 @login_required

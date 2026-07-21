@@ -43,11 +43,11 @@
                             <i class="bi bi-printer"></i> Cetak Bon
                         </a>
                         <!-- Tombol Edit: Sekarang menggunakan order.id yang benar [1] -->
-                        <a href="{{ url_for('penjualan.edit_nota', id=order.id) }}" class="btn btn-sm btn-outline-warning">
+                        <a href="{{ url_for('penjualan.edit_nota', id=order.id, aksi='edit') }}" class="btn btn-sm btn-outline-warning">
                             <i class="bi bi-pencil-square"></i> Edit Order
                         </a>
                         <!-- Tombol Bayar: Sekarang mengarah ke kasir untuk pelunasan [1] -->
-                        <a href="{{ url_for('penjualan.edit_nota', id=order.id) }}" class="btn btn-success btn-sm fw-bold">
+                        <a href="{{ url_for('penjualan.edit_nota', id=order.id, aksi='bayar') }}" class="btn btn-success btn-sm fw-bold">
                             <i class="bi bi-wallet2"></i> PROSES BAYAR
                         </a>
                     </div>

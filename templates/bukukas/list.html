@@ -67,6 +67,7 @@
                         {% if e.penjualan_id %}
                             <span class="badge bg-light text-dark border ms-1">Otomatis</span>
                         {% endif %}
+<<<<<<< HEAD
                         {% if e.jenis == 'masuk' %}
                             {% if e.metode_bayar == 'QRIS' %}
                                 <span class="badge bg-primary ms-1"><i class="bi bi-qr-code-scan"></i> QRIS</span>
@@ -74,6 +75,8 @@
                                 <span class="badge bg-success ms-1"><i class="bi bi-cash-stack"></i> Tunai</span>
                             {% endif %}
                         {% endif %}
+=======
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
                     </td>
                     <td class="text-muted small">{{ e.user.username if e.user else '-' }}</td>
                     <td class="text-end fw-semibold {% if e.jenis == 'masuk' %}text-success{% else %}text-danger{% endif %}">

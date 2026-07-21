@@ -3,13 +3,19 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from extensions import db
 from models import BahanBaku
+<<<<<<< HEAD
 from utils import admin_required, catat_log, recalculate_hpp_cascade
+=======
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 
 bahanbaku = Blueprint('bahanbaku', __name__)
 
 @bahanbaku.route('/')
 @login_required
+<<<<<<< HEAD
 @admin_required
+=======
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 def list_bahan():
     search = request.args.get('q', '')
     query = BahanBaku.query
@@ -20,7 +26,10 @@ def list_bahan():
 
 @bahanbaku.route('/tambah', methods=['POST'])
 @login_required
+<<<<<<< HEAD
 @admin_required
+=======
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 def tambah_bahan():
     kode = request.form.get('kode', '').strip()
     nama = request.form.get('nama_bahan', '').strip()
@@ -55,10 +64,15 @@ def tambah_bahan():
 
 @bahanbaku.route('/edit/<int:id>', methods=['POST'])
 @login_required
+<<<<<<< HEAD
 @admin_required
 def edit_bahan(id):
     bahan = BahanBaku.query.get_or_404(id)
     harga_lama = bahan.harga_beli_terakhir
+=======
+def edit_bahan(id):
+    bahan = BahanBaku.query.get_or_404(id)
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
     bahan.nama_bahan = request.form.get('nama_bahan', bahan.nama_bahan).strip()
     bahan.satuan = request.form.get('satuan', bahan.satuan).strip()
     try:
@@ -69,6 +83,7 @@ def edit_bahan(id):
 
     db.session.commit()
 
+<<<<<<< HEAD
     # Harga bahan berubah -> HPP racikan & produk yang pakai bahan ini (langsung
     # maupun tidak langsung lewat racikan) ikut disesuaikan otomatis
     recalculate_hpp_cascade(bahan)
@@ -77,13 +92,22 @@ def edit_bahan(id):
     if harga_lama != bahan.harga_beli_terakhir:
         deskripsi += f' Harga: Rp{harga_lama:,} -> Rp{bahan.harga_beli_terakhir:,}.'.replace(',', '.')
     catat_log('EDIT_BAHAN_BAKU', deskripsi)
+=======
+    # Harga bahan berubah -> HPP semua produk yang pakai bahan ini ikut disesuaikan
+    for detail in bahan.detail_resep:
+        if detail.resep.produk:
+            detail.resep.produk.update_hpp()
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 
     flash(f'Bahan baku "{bahan.nama_bahan}" berhasil diupdate! HPP produk terkait ikut disesuaikan.', 'success')
     return redirect(url_for('bahanbaku.list_bahan'))
 
 @bahanbaku.route('/restok', methods=['POST'])
 @login_required
+<<<<<<< HEAD
 @admin_required
+=======
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 def restok_bahan():
     b_id = request.form.get('bahan_id')
     bahan = BahanBaku.query.get_or_404(b_id)
@@ -98,7 +122,13 @@ def restok_bahan():
     if harga_baru:
         bahan.harga_beli_terakhir = int(harga_baru)
         db.session.commit()
+<<<<<<< HEAD
         recalculate_hpp_cascade(bahan)
+=======
+        for detail in bahan.detail_resep:
+            if detail.resep.produk:
+                detail.resep.produk.update_hpp()
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
     else:
         db.session.commit()
 
@@ -107,7 +137,10 @@ def restok_bahan():
 
 @bahanbaku.route('/hapus/<int:id>')
 @login_required
+<<<<<<< HEAD
 @admin_required
+=======
+>>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 def hapus_bahan(id):
     bahan = BahanBaku.query.get_or_404(id)
     if bahan.detail_resep:

@@ -37,11 +37,20 @@ def list_produk():
         if list_produk:
             produk_per_kategori[k.value] = list_produk
 
+    # Cek produk dengan stok menipis (untuk alert di halaman)
+    semua_produk_aktif = Produk.query.all()
+    produk_menipis = [
+        p for p in semua_produk_aktif
+        if (p.rekap_stok.jumlah if p.rekap_stok else 0) < BATAS_STOK_MENIPIS
+    ]
+
     return render_template('produk/list_produk.html', 
         produk_per_kategori=produk_per_kategori,
         search=search,
         kategori_filter=kategori_filter,
-        kategoris=['Semua'] + [k.value for k in KategoriEnum]
+        kategoris=['Semua'] + [k.value for k in KategoriEnum],
+        produk_menipis=produk_menipis,
+        batas_stok_menipis=BATAS_STOK_MENIPIS
     )
 
 @produk.route('/tambah', methods=['POST'])
@@ -202,3 +211,42 @@ def restok_produk():
         flash(f'Gagal memperbarui stok: {str(e)}', 'danger')
     
     return redirect(url_for('produk.list_produk'))
+
+# Batas jumlah stok yang dianggap "menipis" dan perlu diwaspadai
+BATAS_STOK_MENIPIS = 5
+
+
+@produk.route('/riwayat')
+@login_required
+def riwayat_stok():
+    from datetime import datetime, date
+
+    produk_id_filter = request.args.get('produk_id', type=int)
+    tgl_str = request.args.get('tanggal', '')
+
+    # 1. LOGIKA BARU: Cari data produk untuk menampilkan kartu "Stok Saat Ini"
+    produk_terpilih = None
+    if produk_id_filter:
+        # Mengambil objek produk berdasarkan ID filter agar template bisa akses p.stok.jumlah
+        produk_terpilih = Produk.query.get(produk_id_filter)
+
+    query = StokHarian.query
+    if produk_id_filter:
+        query = query.filter_by(produk_id=produk_id_filter)
+    if tgl_str:
+        try:
+            tgl = datetime.strptime(tgl_str, '%Y-%m-%d').date()
+            query = query.filter(db.func.date(StokHarian.tanggal) == tgl)
+        except ValueError:
+            tgl_str = ''
+
+    riwayat = query.order_by(StokHarian.id.desc()).limit(200).all()
+    semua_produk = Produk.query.order_by(Produk.nama_produk).all()
+
+    # 2. KIRIMKAN variabel 'produk_terpilih' ke template
+    return render_template('produk/riwayat_stok.html',
+                           riwayat=riwayat,
+                           semua_produk=semua_produk,
+                           produk_id_filter=produk_id_filter,
+                           tanggal=tgl_str,
+                           produk_terpilih=produk_terpilih) # <-- Tambahkan ini

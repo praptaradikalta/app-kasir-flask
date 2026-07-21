@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Audit Log - Kasir UKM{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold mb-0">Audit Log</h2>
+    <p class="text-muted mb-0">Catatan aktivitas penting: siapa, ngapain, kapan.</p>
+</div>
+
+<!-- Filter -->
+<form method="GET" class="row g-2 mb-3">
+    <div class="col-4">
+        <select name="user_id" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Semua User</option>
+            {% for u in semua_user %}
+            <option value="{{ u.id }}" {% if user_id_filter == u.id %}selected{% endif %}>{{ u.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-4">
+        <select name="aksi" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="">Semua Aksi</option>
+            {% for a in semua_aksi %}
+            <option value="{{ a }}" {% if aksi_filter == a %}selected{% endif %}>{{ a }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-4">
+        <input type="date" name="tanggal" value="{{ tanggal }}" class="form-control form-control-sm" onchange="this.form.submit()">
+    </div>
+</form>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Waktu</th>
+                    <th>User</th>
+                    <th>Aksi</th>
+                    <th>Deskripsi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td class="text-muted small text-nowrap">{{ log.waktu.strftime('%d %b %Y, %H:%M') }}</td>
+                    <td class="fw-semibold">{{ log.user.username if log.user else '(sistem)' }}</td>
+                    <td>
+                        {% if 'GAGAL' in log.aksi %}
+                            <span class="badge bg-danger">{{ log.aksi }}</span>
+                        {% elif log.aksi in ('HAPUS_USER', 'HAPUS_PRODUK', 'HAPUS_NOTA') %}
+                            <span class="badge bg-warning text-dark">{{ log.aksi }}</span>
+                        {% elif log.aksi == 'LOGIN' %}
+                            <span class="badge bg-success">{{ log.aksi }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ log.aksi }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="small">{{ log.deskripsi }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">Belum ada catatan log.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<p class="text-muted small mt-2">Menampilkan maksimal 300 catatan terbaru.</p>
+{% endblock %}

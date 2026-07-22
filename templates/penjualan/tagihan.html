@@ -14,8 +14,8 @@
             <div class="card border-0 shadow-sm border-top border-4 border-warning h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
-                        <!-- PERBAIKAN: Gunakan nomor_meja (sesuai database) [2] -->
-                        <h5 class="fw-bold mb-0">Meja {{ order.nomor_meja or '-' }}</h5>
+                        <!-- PERBAIKAN: field yang benar di model Penjualan adalah meja_id -->
+                        <h5 class="fw-bold mb-0">Meja {{ order.meja_id or '-' }}</h5>
                         <span class="text-muted small">#{{ order.id }}</span>
                     </div>
                     <div class="small text-muted mb-3">

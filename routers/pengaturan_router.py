@@ -3,11 +3,13 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from extensions import db
 from models import Pengaturan
+from utils import admin_required, catat_log
 
 pengaturan = Blueprint('pengaturan', __name__)
 
 @pengaturan.route('/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def pengaturan_list():
     settings = Pengaturan.get_settings()
 
@@ -27,6 +29,7 @@ def pengaturan_list():
         settings.catatan_struk = request.form.get('catatan_struk', '').strip()
 
         db.session.commit()
+        catat_log('EDIT_PENGATURAN', f'Mengubah pengaturan toko (nama: {settings.nama_toko}, pajak: {settings.pajak_persen}%, service charge: {settings.service_charge_persen}%).')
         flash('Pengaturan berhasil disimpan!', 'success')
         return redirect(url_for('pengaturan.pengaturan_list'))
 

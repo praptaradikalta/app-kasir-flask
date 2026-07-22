@@ -14,6 +14,86 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
+
+def catat_log(aksi, deskripsi=''):
+    """
+    Catat satu baris audit log. Dipanggil dari mana saja setelah aksi penting
+    terjadi (login, hapus produk, ubah harga, dll).
+    Gagal mencatat log TIDAK boleh menggagalkan aksi utama pengguna, jadi
+    error di sini cuma di-print, tidak di-raise ulang.
+    """
+    from extensions import db
+    from models import AuditLog
+    try:
+        log = AuditLog(
+            user_id=current_user.id if current_user.is_authenticated else None,
+            aksi=aksi,
+            deskripsi=deskripsi
+        )
+        db.session.add(log)
+        db.session.commit()
+    except Exception as e:
+        print(f">>> [AUDIT LOG ERROR] Gagal mencatat log '{aksi}': {e}")
+
+
+def recalculate_hpp_cascade(bahan):
+    """
+    Dipanggil setelah harga sebuah BahanBaku berubah. Update HPP semua yang
+    kena dampak, langsung maupun tidak langsung:
+      1. Racikan (mis. "Kuah Miso") yang pakai bahan ini langsung di resepnya.
+      2. Produk yang pakai bahan ini LANGSUNG di resepnya.
+      3. Produk yang pakai Racikan dari langkah 1 (dampak tidak langsung, lewat racikan).
+    """
+    from models import ResepDetail
+
+    # 1. Racikan yang pakai bahan ini -> hitung ulang HPP racikan itu
+    racikan_terdampak = {rd.racikan for rd in bahan.detail_racikan}
+    for racikan in racikan_terdampak:
+        racikan.update_hpp()
+
+    # 2. Produk yang pakai bahan ini langsung
+    for detail in bahan.detail_resep:
+        if detail.resep.produk:
+            detail.resep.produk.update_hpp()
+
+    # 3. Produk yang pakai racikan yang baru saja ke-update HPP-nya (dampak tidak langsung)
+    for racikan in racikan_terdampak:
+        for rd in ResepDetail.query.filter_by(racikan_id=racikan.id).all():
+            if rd.resep.produk:
+                rd.resep.produk.update_hpp()
+
+
+def send_reset_email(user, token):
+    """
+    Kirim email berisi link reset password. Kalau pengiriman gagal (SMTP belum
+    dikonfigurasi, kredensial salah, dll), jangan sampai error ini bocor ke
+    pengguna dan menyingkap detail internal — cukup return False, dan pemanggil
+    yang urus pesan ke pengguna.
+    """
+    from flask import url_for, current_app
+    from flask_mail import Message
+    from extensions import mail
+
+    reset_link = url_for('user.reset_password', token=token, _external=True)
+
+    try:
+        msg = Message(
+            subject='Reset Password - Kasir UKM',
+            recipients=[user.email],
+            body=(
+                f'Halo {user.nama_lengkap or user.username},\n\n'
+                f'Ada permintaan reset password untuk akun kamu.\n'
+                f'Klik link berikut untuk membuat password baru (berlaku 1 jam):\n\n'
+                f'{reset_link}\n\n'
+                f'Kalau kamu tidak merasa meminta ini, abaikan saja email ini.\n'
+            )
+        )
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f">>> [EMAIL ERROR] Gagal mengirim email reset password: {e}")
+        return False
+
 def hash_password(password):
  return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 

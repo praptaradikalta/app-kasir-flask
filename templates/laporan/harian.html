@@ -112,4 +112,47 @@
     HPP dihitung berdasarkan harga bahan/HPP produk <strong>saat ini</strong>, bukan harga di tanggal transaksi terjadi.
     Produk tanpa resep/HPP akan dianggap HPP = 0.
 </p>
+
+<!-- Rekap Varian Mie: per transaksi, lengkap tanggal & jamnya -->
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-body">
+        <h6 class="fw-bold mb-3 text-muted text-uppercase small">
+            <i class="fas fa-bowl-food me-1"></i>Rekap Semua Varian Mie
+        </h6>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Waktu</th>
+                        <th>Nota</th>
+                        <th>Menu</th>
+                        <th>Varian</th>
+                        <th class="text-center">Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in rekap_mie %}
+                    <tr>
+                        <td class="small">{{ m.tanggal }}</td>
+                        <td class="small text-muted">{{ m.waktu }}</td>
+                        <td class="small">#{{ m.nota_id }}</td>
+                        <td class="fw-semibold">{{ m.nama_produk }}</td>
+                        <td>
+                            {% if m.varian and m.varian != '-' %}
+                                <span class="badge bg-info text-dark">{{ m.varian }}</span>
+                            {% else %}
+                                <span class="badge bg-light text-muted">Standar</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">{{ m.qty }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="6" class="text-center py-4 text-muted">Tidak ada penjualan menu mie pada rentang ini.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

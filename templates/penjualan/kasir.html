@@ -9,20 +9,44 @@
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body">
                     <h5 class="fw-bold mb-3">Daftar Menu</h5>
-                    <div class="row row-cols-2 row-cols-lg-3 g-3">
-                        {% for p in produk_list %}
-                        <div class="col">
-                            <div class="card h-100 border-0 shadow-sm text-center p-2">
-                                <img src="{{ url_for('static', filename='uploads/' + (p.gambar or 'default.png')) }}" 
-                                     class="card-img-top rounded mx-auto" style="height: 100px; width: auto; object-fit: cover;">
-                                <div class="card-body p-2">
-                                    <p class="small mb-1 fw-bold">{{ p.nama_produk }}</p>
-                                    <p class="small text-primary mb-2">Rp {{ "{:,}".format(p.harga_jual) }}</p>
-                                    <button class="btn btn-sm btn-outline-primary w-100" 
-                                            onclick="tambahKeKeranjang('{{ p.id }}', '{{ p.nama_produk }}', '{{ p.harga_jual }}')">
-                                        + Tambah
-                                    </button>
+
+                    <!-- Tab kategori: biar kasir gak perlu scroll panjang nyari menu, -->
+                    <!-- terutama di HP -->
+                    <ul class="nav nav-pills mb-3 flex-nowrap overflow-auto pb-1" id="kategoriTab" role="tablist">
+                        {% for kategori, list_produk in produk_per_kategori.items() %}
+                        <li class="nav-item text-nowrap" role="presentation">
+                            <button class="nav-link {{ 'active' if loop.first }}"
+                                    id="tab-{{ kategori|replace(' ', '-') }}"
+                                    data-bs-toggle="pill"
+                                    data-bs-target="#pane-{{ kategori|replace(' ', '-') }}"
+                                    type="button" role="tab">
+                                {{ kategori }} <span class="badge bg-light text-dark ms-1">{{ list_produk|length }}</span>
+                            </button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="tab-content" id="kategoriTabContent">
+                        {% for kategori, list_produk in produk_per_kategori.items() %}
+                        <div class="tab-pane fade {{ 'show active' if loop.first }}"
+                             id="pane-{{ kategori|replace(' ', '-') }}" role="tabpanel">
+                            <div class="row row-cols-2 row-cols-lg-3 g-3">
+                                {% for p in list_produk %}
+                                <div class="col">
+                                    <div class="card h-100 border-0 shadow-sm text-center p-2">
+                                        <img src="{{ url_for('static', filename='uploads/' + (p.gambar or 'default.png')) }}" 
+                                             class="card-img-top rounded mx-auto" style="height: 100px; width: auto; object-fit: cover;">
+                                        <div class="card-body p-2">
+                                            <p class="small mb-1 fw-bold">{{ p.nama_produk }}</p>
+                                            <p class="small text-primary mb-2">Rp {{ "{:,}".format(p.harga_jual) }}</p>
+                                            <button class="btn btn-sm btn-outline-primary w-100" 
+                                                    onclick="tambahKeKeranjang('{{ p.id }}', '{{ p.nama_produk }}', '{{ p.harga_jual }}')">
+                                                + Tambah
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
+                                {% endfor %}
                             </div>
                         </div>
                         {% endfor %}
@@ -40,17 +64,18 @@
                         
                         <div class="row mb-3 g-2">
                             <div class="col-6">
-                                <label class="small text-muted">Tipe Pesanan</label>
+                                <label class="small text-muted">Tipe Pesanan <span class="text-danger">*</span></label>
                                 <select name="tipe_pesanan" id="tipe_pesanan" class="form-select form-select-sm" required onchange="togglePembayaran()">
+                                    <option value="" {% if not edit_mode %}selected{% endif %} disabled>-- Pilih Tipe --</option>
                                     <option value="Makan di Tempat" {% if edit_mode and nota.tipe_pesanan == 'Makan di Tempat' %}selected{% endif %}>Makan di Tempat</option>
                                     <option value="Take Away" {% if edit_mode and nota.tipe_pesanan == 'Take Away' %}selected{% endif %}>Take Away</option>
                                 </select>
                             </div>
                             <div class="col-6">
-                                <label class="small text-muted">Nomor Meja</label>
+                                <label class="small text-muted" id="label-meja">Nomor Meja</label>
                                 <!-- PERBAIKAN: Tambahkan value agar nomor meja lama muncul saat edit -->
-                                <input type="number" name="meja_id" class="form-control form-select-sm" 
-                                    value="{{ nota.meja_id if edit_mode else '' }}" placeholder="Opsional">
+                                <input type="number" name="meja_id" id="input-meja" class="form-control form-select-sm" 
+                                    value="{{ nota.meja_id if edit_mode else '' }}" placeholder="Wajib diisi kalau Makan di Tempat">
                             </div>
                         </div>
 
@@ -66,6 +91,19 @@
                             <input type="hidden" name="total_bayar" id="input-total" value="0">
                         </div>
 
+                        <div class="mb-3" id="section-metode-bayar">
+                            <label class="small text-muted fw-bold d-block mb-1">Metode Pembayaran</label>
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="metode_bayar" id="metode-tunai" value="Tunai"
+                                    {% if not edit_mode or nota.metode_bayar != 'QRIS' %}checked{% endif %} onchange="updateMetodeBayar()">
+                                <label class="btn btn-outline-primary btn-sm" for="metode-tunai"><i class="bi bi-cash-stack"></i> Tunai</label>
+
+                                <input type="radio" class="btn-check" name="metode_bayar" id="metode-qris" value="QRIS"
+                                    {% if edit_mode and nota.metode_bayar == 'QRIS' %}checked{% endif %} onchange="updateMetodeBayar()">
+                                <label class="btn btn-outline-primary btn-sm" for="metode-qris"><i class="bi bi-qr-code-scan"></i> QRIS</label>
+                            </div>
+                        </div>
+
                         <div class="mb-3" id="section-pembayaran">
                             <label class="small text-muted fw-bold">Diterima (Tunai)</label>
                             <input type="number" name="bayar" id="input-bayar" 
@@ -73,8 +111,13 @@
                                 value="{{ nota.bayar if edit_mode else '' }}"
                                 placeholder="0" required oninput="hitungKembalian()">
                         </div>
+
+                        <div class="alert alert-info d-none small mb-3 py-2" id="section-qris-info">
+                            <i class="bi bi-qr-code-scan me-1"></i> Pastikan customer sudah scan &amp; bayar QRIS sebesar
+                            <strong id="qris-total-label">Rp 0</strong>, baru klik tombol konfirmasi di bawah.
+                        </div>
                     
-                        <div class="d-flex justify-content-between small mb-3">
+                        <div class="d-flex justify-content-between small mb-3" id="section-kembalian">
                             <span>Kembalian:</span>
                             <span id="display-kembalian">Rp 0</span>
                         </div>
@@ -250,16 +293,30 @@
 
     function togglePembayaran() {
         const tipePesanan = document.getElementById('tipe_pesanan').value;
+        const inputMeja = document.getElementById('input-meja');
+        const labelMeja = document.getElementById('label-meja');
+
+        // Nomor meja WAJIB diisi kalau tipe pesanannya "Makan di Tempat"
+        // (gak masuk akal ada pesanan makan di tempat tanpa jelas mejanya).
+        // Untuk Take Away, meja gak relevan jadi tetap opsional.
+        if (tipePesanan === 'Makan di Tempat') {
+            inputMeja.setAttribute('required', 'required');
+            labelMeja.innerHTML = 'Nomor Meja <span class="text-danger">*</span>';
+        } else {
+            inputMeja.removeAttribute('required');
+            labelMeja.innerHTML = 'Nomor Meja';
+        }
+
         const inputBayar = document.getElementById('input-bayar'); // Sesuaikan ID di sini
         const sectionPembayaran = document.getElementById('section-pembayaran');
+        const sectionMetode = document.getElementById('section-metode-bayar');
 
         // Kotak bayar HANYA dipaksa tampil saat memang sedang proses pelunasan
         // (dibuka lewat tombol "PROSES BAYAR"). Kalau cuma edit/tambah order
         // biasa, ikuti aturan tipe pesanan seperti order baru.
         if (modeBayar) {
-            inputBayar.setAttribute('required', 'required');
-            sectionPembayaran.style.display = 'block';
-            hitungKembalian();
+            sectionMetode.style.display = 'block';
+            updateMetodeBayar(); // urus tampil/sembunyi section-pembayaran & kembalian sesuai Tunai/QRIS
             return;
         }
 
@@ -268,11 +325,40 @@
             inputBayar.removeAttribute('required'); 
             inputBayar.value = 0; 
             sectionPembayaran.style.display = 'none'; // Sembunyikan agar kasir fokus ke pesanan
-        } else {
+            sectionMetode.style.display = 'none';
+            document.getElementById('section-qris-info').classList.add('d-none');
+        } else if (tipePesanan === 'Take Away') {
             // Untuk Bungkus, wajib isi uang tunai di depan
-            inputBayar.setAttribute('required', 'required');
-            inputBayar.value = ""; 
+            sectionMetode.style.display = 'block';
+            updateMetodeBayar();
+        } else {
+            // Belum dipilih sama sekali (baru buka halaman) - sembunyikan dulu
+            // semua kotak pembayaran sampai kasir benar-benar milih tipe pesanannya.
+            sectionPembayaran.style.display = 'none';
+            sectionMetode.style.display = 'none';
+            document.getElementById('section-qris-info').classList.add('d-none');
+        }
+        hitungKembalian();
+    }
+
+    function updateMetodeBayar() {
+        const isQris = document.getElementById('metode-qris').checked;
+        const inputBayar = document.getElementById('input-bayar');
+        const sectionPembayaran = document.getElementById('section-pembayaran');
+        const sectionKembalian = document.getElementById('section-kembalian');
+        const sectionQrisInfo = document.getElementById('section-qris-info');
+
+        if (isQris) {
+            // QRIS: customer bayar pas sesuai total lewat scan QR, gak ada input tunai/kembalian
+            sectionPembayaran.style.display = 'none';
+            sectionKembalian.style.display = 'none';
+            sectionQrisInfo.classList.remove('d-none');
+            inputBayar.removeAttribute('required');
+        } else {
             sectionPembayaran.style.display = 'block';
+            sectionKembalian.style.display = 'flex';
+            sectionQrisInfo.classList.add('d-none');
+            inputBayar.setAttribute('required', 'required');
         }
         hitungKembalian();
     }
@@ -284,11 +370,23 @@
 
 
     function hitungKembalian() {
-        const total = parseInt(document.getElementById('input-total').value);
-        const bayar = parseInt(document.getElementById('input-bayar').value || 0);
+        const total = parseInt(document.getElementById('input-total').value) || 0;
+        const inputBayar = document.getElementById('input-bayar');
+        const metodeQris = document.getElementById('metode-qris');
+
+        // QRIS dianggap selalu dibayar PAS sesuai total (gak ada kembalian),
+        // jadi nilainya otomatis disamain tiap kali total berubah (misal item ditambah).
+        if (metodeQris && metodeQris.checked) {
+            inputBayar.value = total;
+        }
+
+        const bayar = parseInt(inputBayar.value || 0);
         const kembalian = bayar - total;
 
         document.getElementById('display-kembalian').innerText = "Rp " + (kembalian >= 0 ? kembalian.toLocaleString() : 0);
+
+        const qrisLabel = document.getElementById('qris-total-label');
+        if (qrisLabel) qrisLabel.textContent = "Rp " + total.toLocaleString();
     }
 
     function hapusItem(element) {
@@ -307,10 +405,13 @@
             
             // TAMBAHKAN KURUNG KURAWAL DI SINI UNTUK MEMBUAT SCOPE BARU
             {
+                // PENTING: pakai harga_satuan (harga yang beneran tercatat saat transaksi),
+                // BUKAN produk.harga_jual (harga terkini) -- biar item lama gak diam-diam
+                // ke-reprice kalau harga produknya udah berubah sejak order ini dibuat.
                 tambahKeKeranjang(
                     "{{ detail.produk_id }}", 
                     "{{ detail.produk.nama_produk }}", 
-                    "{{ detail.produk.harga_jual }}"
+                    "{{ detail.harga_satuan }}"
                 );
 
                 // Sekarang variabel ini aman walaupun diulang berkali-kali

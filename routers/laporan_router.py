@@ -6,6 +6,7 @@ from models.penjualan import Penjualan
 from models.penjualan_detail import PenjualanDetail
 from models.produk_model import Produk
 from sqlalchemy import func
+from utils import admin_required
 from datetime import datetime, date, timedelta
 
 laporan = Blueprint('laporan', __name__)
@@ -42,6 +43,7 @@ def _hitung_rentang(preset, dari_str, sampai_str):
 
 @laporan.route('/harian')
 @login_required
+@admin_required
 def laporan_harian():
     preset = request.args.get('preset', 'hari_ini')
     preset, dari, sampai = _hitung_rentang(
@@ -97,11 +99,41 @@ def laporan_harian():
             'laba': laba,
         })
 
+    # --- Rekap khusus semua varian Mie, per transaksi (bukan gabungan) ---
+    # Beda dari tabel "Rincian Penjualan Menu" di atas yang digabung per menu+varian,
+    # ini nampilin baris per transaksi lengkap tanggal & jam-nya, biar kelihatan
+    # kapan tepatnya tiap varian mie itu laku (mis. buat lihat pola jam ramai).
+    rekap_mie_raw = db.session.query(
+        Penjualan.tanggal,
+        Penjualan.id.label('nota_id'),
+        Produk.nama_produk,
+        PenjualanDetail.varian,
+        PenjualanDetail.qty
+    ).join(PenjualanDetail, Produk.id == PenjualanDetail.produk_id)\
+     .join(Penjualan, Penjualan.id == PenjualanDetail.penjualan_id)\
+     .filter(
+         func.date(Penjualan.tanggal).between(dari, sampai),
+         Penjualan.status == 'Lunas',
+         Produk.nama_produk.ilike('%mie%')
+     )\
+     .order_by(Penjualan.tanggal.desc())\
+     .all()
+
+    rekap_mie = [{
+        'tanggal': r.tanggal.strftime('%d %b %Y'),
+        'waktu': r.tanggal.strftime('%H:%M'),
+        'nota_id': r.nota_id,
+        'nama_produk': r.nama_produk,
+        'varian': r.varian,
+        'qty': r.qty,
+    } for r in rekap_mie_raw]
+
     return render_template('laporan/harian.html',
                            ringkasan=ringkasan,
                            rincian=rincian,
                            total_hpp=total_hpp,
                            total_laba=total_laba,
+                           rekap_mie=rekap_mie,
                            preset=preset,
                            dari=dari.isoformat(),
                            sampai=sampai.isoformat())
@@ -109,7 +141,8 @@ def laporan_harian():
 
 @laporan.route('/stok-mutakhir')
 @login_required
+@admin_required
 def stok_mutakhir():
     # Mengambil semua produk beserta jumlah stok terakhirnya
-    daftar_stok = Produk.query.all() 
+    daftar_stok = Produk.query.order_by(Produk.nama_produk).all()
     return render_template('laporan/stok_mutakhir.html', daftar_stok=daftar_stok)

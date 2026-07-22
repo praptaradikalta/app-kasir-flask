@@ -5,7 +5,7 @@ from extensions import db
 class HutangSupplier(db.Model):
     __tablename__ = 'hutang_supplier'
     id = db.Column(db.Integer, primary_key=True)
-    tanggal = db.Column(db.DateTime, default=datetime.utcnow)
+    tanggal = db.Column(db.DateTime, default=datetime.now)
     produk_id = db.Column(db.Integer, db.ForeignKey('produk.id'), nullable=False)
     penjualan_id = db.Column(db.Integer, db.ForeignKey('penjualan.id'), nullable=False)
     supplier = db.Column(db.String(100))  # "Pak Supir Chitato"

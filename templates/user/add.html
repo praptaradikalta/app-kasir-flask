@@ -22,6 +22,15 @@
             </div>
 
             <div class="mb-3">
+                {{ form.email.label(class="form-label fw-semibold") }}
+                {{ form.email(class="form-control", placeholder="user@email.com (buat reset password)") }}
+                {% for error in form.email.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Opsional, tapi wajib diisi kalau user ini mau bisa reset password sendiri lewat email.</div>
+            </div>
+
+            <div class="mb-3">
                 {{ form.password.label(class="form-label fw-semibold") }}
                 {{ form.password(class="form-control", placeholder="Minimal 6 karakter") }}
                 {% for error in form.password.errors %}

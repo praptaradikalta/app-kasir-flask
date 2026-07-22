@@ -9,7 +9,6 @@
 </div>
 
 <!-- Tombol navigasi ke Laporan Stok Mutakhir jika diperlukan -->
-<<<<<<< HEAD
 {% if current_user.role in ('admin', 'owner') %}
 <a href="{{ url_for('laporan.stok_mutakhir') }}" class="btn btn-outline-primary btn-sm mb-3">
     <i class="fas fa-boxes me-1"></i> Cek Stok Mutakhir
@@ -19,15 +18,6 @@
 <!-- Filter -->
 <form method="GET" class="row g-2 mb-3">
     <div class="col-md-4 col-6">
-=======
-<a href="{{ url_for('laporan.stok_mutakhir') }}" class="btn btn-outline-primary btn-sm">
-    <i class="fas fa-boxes me-1"></i> Cek Stok Mutakhir
-</a>
-
-<!-- Filter -->
-<form method="GET" class="row g-2 mb-3">
-    <div class="col-6">
->>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
         <select name="produk_id" class="form-select" onchange="this.form.submit()">
             <option value="">Semua Produk</option>
             {% for p in semua_produk %}
@@ -35,7 +25,6 @@
             {% endfor %}
         </select>
     </div>
-<<<<<<< HEAD
     <div class="col-md-3 col-6">
         <input type="date" name="tanggal" value="{{ tanggal }}" class="form-control" onchange="this.form.submit()">
     </div>
@@ -45,11 +34,6 @@
             <button type="submit" class="btn btn-outline-secondary"><i class="fas fa-search"></i></button>
         </div>
     </div>
-=======
-    <div class="col-6">
-        <input type="date" name="tanggal" value="{{ tanggal }}" class="form-control" onchange="this.form.submit()">
-    </div>
->>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 </form>
 
 <!-- Tambahkan rincian sisa stok jika produk dipilih (Source 38) -->
@@ -99,7 +83,6 @@
         </table>
     </div>
 </div>
-<<<<<<< HEAD
 <p class="text-muted small text-center mt-2">
     Menampilkan {{ riwayat|length }} dari {{ pagination.total }} catatan (halaman {{ pagination.page }} dari {{ pagination.pages or 1 }}).
 </p>
@@ -125,7 +108,4 @@
     </ul>
 </nav>
 {% endif %}
-=======
-<p class="text-muted small mt-2">Menampilkan maksimal 200 catatan terbaru.</p>
->>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 {% endblock %}

@@ -50,10 +50,12 @@
                 <i class="fas fa-th-large text-xl mb-1"></i>
                 <span class="text-[10px] font-medium">Dashboard</span>
             </a>
+            {% if current_user.role in ('admin', 'owner') %}
             <a href="{{ url_for('produk.list_produk') }}" class="flex flex-col items-center text-gray-400 hover:text-indigo-600 transition">
                 <i class="fas fa-box text-xl mb-1"></i>
                 <span class="text-[10px] font-medium">Produk</span>
             </a>
+            {% endif %}
             <a href="{{ url_for('penjualan.riwayat_penjualan') }}" class="text-center text-decoration-none {% if request.endpoint == 'penjualan.riwayat_penjualan' %}text-primary fw-bold{% else %}text-muted{% endif %}">
                 <i class="bi bi-receipt d-block fs-4"></i>
                 <small>Riwayat</small>
@@ -74,21 +76,37 @@
         </div>
         <div class="offcanvas-body pt-0 pb-4">
             <div class="list-group list-group-flush">
+                {% if current_user.role in ('admin', 'owner') %}
                 <a href="{{ url_for('bahanbaku.list_bahan') }}" class="list-group-item list-group-item-action py-3 d-flex align-items-center">
                     <i class="fas fa-flask me-3 text-warning"></i>Bahan Baku &amp; HPP
                 </a>
+                <a href="{{ url_for('racikan.list_racikan') }}" class="list-group-item list-group-item-action py-3 d-flex align-items-center">
+                    <i class="fas fa-blender me-3 text-warning"></i>Racikan &amp; Semi Jadi
+                </a>
+                <a href="{{ url_for('laporan.stok_mutakhir') }}" class="list-group-item list-group-item-action py-3 d-flex align-items-center">
+                    <i class="fas fa-boxes-stacked me-3 text-primary"></i>Stok Mutakhir
+                </a>
+                {% endif %}
                 <a href="{{ url_for('produk.riwayat_stok') }}" class="list-group-item list-group-item-action py-3 d-flex align-items-center">
                     <i class="fas fa-clock-rotate-left me-3 text-info"></i>Riwayat Stok
                 </a>
                 <a href="{{ url_for('bukukas.bukukas_list') }}" class="list-group-item list-group-item-action py-3 d-flex align-items-center">
                     <i class="fas fa-wallet me-3 text-primary"></i>Buku Kas
                 </a>
+                <a href="{{ url_for('shift.status') }}" class="list-group-item list-group-item-action py-3 d-flex align-items-center">
+                    <i class="fas fa-clock me-3 text-success"></i>Shift Kerja
+                </a>
+                {% if current_user.role in ('admin', 'owner') %}
                 <a href="{{ url_for('laporan.laporan_harian') }}" class="list-group-item list-group-item-action py-3 d-flex align-items-center">
                     <i class="fas fa-file-alt me-3 text-success"></i>Laporan Penjualan
                 </a>
                 <a href="{{ url_for('pengaturan.pengaturan_list') }}" class="list-group-item list-group-item-action py-3 d-flex align-items-center">
                     <i class="fas fa-cog me-3 text-secondary"></i>Pengaturan
                 </a>
+                <a href="{{ url_for('audit.audit_list') }}" class="list-group-item list-group-item-action py-3 d-flex align-items-center">
+                    <i class="fas fa-shield-halved me-3 text-dark"></i>Audit Log
+                </a>
+                {% endif %}
                 <a href="{{ url_for('user.logout') }}" class="list-group-item list-group-item-action py-3 d-flex align-items-center text-danger">
                     <i class="fas fa-sign-out-alt me-3"></i>Keluar
                 </a>

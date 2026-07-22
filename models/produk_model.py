@@ -34,8 +34,11 @@ class Produk(db.Model):
         if self.kategori in ['Makanan', 'Minuman'] and self.resep and not self.is_konsinyasi:
             if not self.resep.porsi_hasil:
                 return
+            # Setiap baris resep bisa sumbernya dari bahan baku langsung ATAU
+            # dari racikan semi-jadi (mis. Kuah Miso) yang HPP-nya sendiri
+            # udah dihitung dari resep racikan itu.
             total_hpp_batch = sum(
-                d.qty_pakai * d.bahan.harga_beli_terakhir for d in self.resep.detail
+                d.qty_pakai * d.harga_satuan_sumber for d in self.resep.detail
             )
             self.harga_beli = total_hpp_batch // self.resep.porsi_hasil
             db.session.commit()

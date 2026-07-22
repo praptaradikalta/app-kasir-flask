@@ -1,31 +1,20 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from extensions import db
-<<<<<<< HEAD
 from models import Produk, Resep, ResepDetail, BahanBaku, Racikan
 from utils import admin_required
-=======
-from models import Produk, Resep, ResepDetail, BahanBaku
->>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 
 resep_bp = Blueprint('resep', __name__)
 
 @resep_bp.route('/<int:produk_id>', methods=['GET', 'POST'])
 @login_required
-<<<<<<< HEAD
 @admin_required
-=======
->>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 def kelola_resep(produk_id):
     produk = Produk.query.get_or_404(produk_id)
     # Gunakan filter_by agar pencarian akurat
     resep = Resep.query.filter_by(produk_id=produk_id).first()
-<<<<<<< HEAD
     bahan_baku = BahanBaku.query.order_by(BahanBaku.nama_bahan).all()
     semua_racikan = Racikan.query.order_by(Racikan.nama_racikan).all()
-=======
-    bahan_baku = BahanBaku.query.all()
->>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 
     if request.method == 'POST':
         try:
@@ -49,7 +38,6 @@ def kelola_resep(produk_id):
         db.session.flush() # Pastikan resep.id tersedia
 
         total_modal_batch = 0
-<<<<<<< HEAD
         # Setiap baris dikirim sebagai "bahan:5" atau "racikan:3" -> biar 1 dropdown
         # bisa milih dari dua sumber (bahan mentah langsung ATAU racikan semi-jadi)
         sumber_list = request.form.getlist('sumber_id[]')
@@ -83,20 +71,6 @@ def kelola_resep(produk_id):
                 continue
 
             db.session.add(detail)
-=======
-        bahan_ids = request.form.getlist('bahan_id[]')
-        qtys = request.form.getlist('qty_pakai[]')
-
-        for b_id, qty in zip(bahan_ids, qtys):
-            if b_id and qty:
-                qty_val = float(qty)
-                detail = ResepDetail(resep_id=resep.id, bahan_id=int(b_id), qty_pakai=qty_val)
-                db.session.add(detail)
-                
-                # Ambil harga bahan untuk hitung HPP produk
-                bahan = BahanBaku.query.get(b_id)
-                total_modal_batch += (bahan.harga_beli_terakhir * qty_val)
->>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba
 
         # Update harga_beli di tabel Produk (Total Modal / Porsi Hasil)
         produk.harga_beli = int(total_modal_batch / porsi_hasil)
@@ -110,8 +84,4 @@ def kelola_resep(produk_id):
         
         return redirect(url_for('resep.kelola_resep', produk_id=produk.id))
 
-<<<<<<< HEAD
     return render_template('resep/edit.html', produk=produk, resep=resep, bahan_baku=bahan_baku, semua_racikan=semua_racikan)
-=======
-    return render_template('resep/edit.html', produk=produk, resep=resep, bahan_baku=bahan_baku)
->>>>>>> 47f79f93bd72a2496fbfbfbfcf5c782b714107ba

@@ -1,43 +1,128 @@
-<!-- templates/pengaturan.html -->
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KasirPro - Pengaturan</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/pengaturan.css') }}" />
-</head>
-<body>
-  <header class="mobile-nav">Pengaturan</header>
+{% extends "base.html" %}
 
-  <main>
-    <section>
-      <h2>Pengaturan Sistem</h2>
-      <form id="settingsForm" method="POST" action="#">
-        <label for="storeName">Nama Toko</label>
-        <input type="text" id="storeName" name="storeName" placeholder="Masukkan nama toko" />
+{% block title %}Pengaturan - Kasir UKM{% endblock %}
 
-        <label for="currency">Mata Uang</label>
-        <select id="currency" name="currency">
-          <option value="IDR" selected>Rupiah (IDR)</option>
-          <option value="USD">Dollar (USD)</option>
-          <option value="EUR">Euro (EUR)</option>
-        </select>
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold mb-0">Pengaturan</h2>
+    <p class="text-muted mb-0">Atur informasi toko, pajak, dan preferensi transaksi.</p>
+</div>
 
-        <button type="submit">Simpan Pengaturan</button>
-      </form>
-    </section>
-  </main>
+<form method="POST" novalidate>
+    <!-- Informasi Toko -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body p-4">
+            <h6 class="fw-bold mb-3"><i class="fas fa-store me-2 text-primary"></i>Informasi Toko</h6>
 
-  <nav class="bottom-nav">
-    <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
-    <a href="{{ url_for('produk.produk_list') }}">Produk</a>
-    <a href="{{ url_for('penjualan.penjualan_list') }}">Penjualan</a>
-    <a href="{{ url_for('laporan.laporan_list') }}">Laporan</a>
-    <a href="{{ url_for('pengaturan.pengaturan_list') }}" class="active">Pengaturan</a>
-  </nav>
-  <script src="{{ url_for('static', filename='js/menu.js') }}"></script>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">Nama Toko</label>
+                <input type="text" name="nama_toko" class="form-control" value="{{ settings.nama_toko }}" placeholder="Contoh: Kasir UKM Berkah">
+            </div>
 
-</body>
-</html>
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">Alamat</label>
+                <input type="text" name="alamat" class="form-control" value="{{ settings.alamat }}" placeholder="Alamat toko (opsional)">
+            </div>
+
+            <div class="mb-0">
+                <label class="form-label small fw-semibold">Nomor Telepon</label>
+                <input type="text" name="no_telp" class="form-control" value="{{ settings.no_telp }}" placeholder="Contoh: 0812xxxxxxx">
+            </div>
+        </div>
+    </div>
+
+    <!-- Pajak & Biaya Layanan -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body p-4">
+            <h6 class="fw-bold mb-3"><i class="fas fa-receipt me-2 text-success"></i>Pajak &amp; Biaya Layanan</h6>
+
+            <div class="row">
+                <div class="col-6 mb-0">
+                    <label class="form-label small fw-semibold">Pajak / PPN (%)</label>
+                    <input type="number" step="0.1" min="0" max="100" name="pajak_persen" class="form-control" value="{{ settings.pajak_persen }}">
+                </div>
+                <div class="col-6 mb-0">
+                    <label class="form-label small fw-semibold">Biaya Layanan (%)</label>
+                    <input type="number" step="0.1" min="0" max="100" name="service_charge_persen" class="form-control" value="{{ settings.service_charge_persen }}">
+                </div>
+            </div>
+            <div class="form-text mt-2">Kosongkan/isi 0 kalau tokomu tidak menerapkan pajak atau biaya layanan.</div>
+        </div>
+    </div>
+
+    <!-- Preferensi Transaksi -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body p-4">
+            <h6 class="fw-bold mb-3"><i class="fas fa-sliders-h me-2 text-warning"></i>Preferensi Transaksi</h6>
+
+            <div class="mb-3">
+                <label class="form-label small fw-semibold">Mata Uang</label>
+                <select name="mata_uang" class="form-select">
+                    <option value="IDR" {% if settings.mata_uang == 'IDR' %}selected{% endif %}>Rupiah (IDR)</option>
+                    <option value="USD" {% if settings.mata_uang == 'USD' %}selected{% endif %}>Dollar (USD)</option>
+                    <option value="EUR" {% if settings.mata_uang == 'EUR' %}selected{% endif %}>Euro (EUR)</option>
+                </select>
+            </div>
+
+            <div class="mb-0">
+                <label class="form-label small fw-semibold">Catatan di Struk</label>
+                <input type="text" name="catatan_struk" class="form-control" value="{{ settings.catatan_struk }}" placeholder="Contoh: Terima kasih atas kunjungan Anda!">
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary px-4">
+        <i class="fas fa-save me-2"></i>Simpan Pengaturan
+    </button>
+</form>
+
+{% if current_user.role in ('admin', 'owner') %}
+<div class="card border-0 shadow-sm mt-4">
+    <div class="card-body p-4">
+        <h6 class="fw-bold mb-2"><i class="fas fa-users-cog me-2 text-secondary"></i>Manajemen User</h6>
+        <p class="text-muted small mb-3">Kelola akun kasir, admin, dan owner yang bisa login ke aplikasi ini.</p>
+        <a href="{{ url_for('user.user_list') }}" class="btn btn-outline-primary btn-sm">
+            Buka Manajemen User <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mt-3">
+    <div class="card-body p-4">
+        <h6 class="fw-bold mb-2"><i class="fas fa-database me-2 text-info"></i>Backup Database</h6>
+        <p class="text-muted small mb-3">
+            Database di-backup <strong>otomatis</strong> setiap kali aplikasi ditutup, tersimpan di <code>instance/backups/</code>.
+            Bisa juga backup manual kapan aja, misalnya sebelum <code>git pull</code> atau update besar.
+        </p>
+        <form method="POST" action="{{ url_for('pengaturan.backup_sekarang') }}" class="mb-3">
+            <button type="submit" class="btn btn-info btn-sm text-white">
+                <i class="fas fa-download me-1"></i>Backup Sekarang
+            </button>
+        </form>
+
+        {% if daftar_backup %}
+        <div class="table-responsive">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr><th>Nama File</th><th class="text-end">Ukuran</th></tr>
+                </thead>
+                <tbody>
+                    {% for b in daftar_backup[:10] %}
+                    <tr>
+                        <td class="small">{{ b.nama }}</td>
+                        <td class="text-end small text-muted">{{ b.ukuran_kb }} KB</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if daftar_backup|length > 10 %}
+        <p class="text-muted small mb-0 mt-2">...dan {{ daftar_backup|length - 10 }} backup lainnya di folder <code>instance/backups/</code>.</p>
+        {% endif %}
+        {% else %}
+        <p class="text-muted small mb-0">Belum ada backup. Backup pertama bakal otomatis dibuat pas aplikasi ditutup, atau klik "Backup Sekarang" di atas.</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -11,7 +11,22 @@
                 <p class="text-muted">Pantau performa tokomu hari ini.</p>
             </div>
             <div class="text-end">
-                <span class="badge bg-primary px-3 py-2">Shift Aktif</span>
+                {% if shift_aktif %}
+                <a href="{{ url_for('shift.status') }}" class="badge bg-success px-3 py-2 text-decoration-none">
+                    <i class="fas fa-circle-check me-1"></i>Shift Aktif
+                </a>
+                <div class="small mt-1 {{ 'text-danger fw-bold' if shift_lupa_ditutup else 'text-muted' }}">
+                    {% if shift_lupa_ditutup %}
+                        <i class="fas fa-triangle-exclamation"></i> Dibuka {{ shift_aktif.waktu_mulai.strftime('%d %b, %H:%M') }} — lupa ditutup?
+                    {% else %}
+                        Sejak {{ shift_aktif.waktu_mulai.strftime('%H:%M') }}
+                    {% endif %}
+                </div>
+                {% else %}
+                <a href="{{ url_for('shift.status') }}" class="badge bg-warning text-dark px-3 py-2 text-decoration-none">
+                    <i class="fas fa-triangle-exclamation me-1"></i>Belum Buka Shift
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -20,20 +35,37 @@
 <!-- RINGKASAN STATISTIK (Responsive Cards) -->
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
+        <a href="{{ url_for('shift.status') }}" class="text-decoration-none">
+            <div class="card border-0 shadow-sm text-center p-3 h-100">
+                <div class="card-body p-0">
+                    <i class="fas fa-cash-register text-info fa-2x mb-2"></i>
+                    <p class="small text-muted mb-1">Uang di Laci</p>
+                    {% if uang_di_laci is not none %}
+                    <h5 class="fw-bold mb-0 text-dark">Rp {{ "{:,.0f}".format(uang_di_laci).replace(',', '.') }}</h5>
+                    {% else %}
+                    <h6 class="fw-bold mb-0 text-muted">Belum buka shift</h6>
+                    {% endif %}
+                </div>
+            </div>
+        </a>
+    </div>
+    {% if current_user.role in ('admin', 'owner') %}
+    <div class="col-6 col-md-3">
         <div class="card border-0 shadow-sm text-center p-3 h-100">
             <div class="card-body p-0">
                 <i class="fas fa-wallet text-success fa-2x mb-2"></i>
-                <p class="small text-muted mb-1">Pendapatan</p>
-                <h5 class="fw-bold mb-0">Rp 1.2M</h5>
+                <p class="small text-muted mb-1">Pendapatan Hari Ini</p>
+                <h5 class="fw-bold mb-0">Rp {{ "{:,.0f}".format(pendapatan_hari_ini).replace(',', '.') }}</h5>
             </div>
         </div>
     </div>
+    {% endif %}
     <div class="col-6 col-md-3">
         <div class="card border-0 shadow-sm text-center p-3 h-100">
             <div class="card-body p-0">
                 <i class="fas fa-shopping-basket text-primary fa-2x mb-2"></i>
-                <p class="small text-muted mb-1">Transaksi</p>
-                <h5 class="fw-bold mb-0">24</h5>
+                <p class="small text-muted mb-1">Transaksi Hari Ini</p>
+                <h5 class="fw-bold mb-0">{{ transaksi_hari_ini }}</h5>
             </div>
         </div>
     </div>
@@ -41,8 +73,8 @@
         <div class="card border-0 shadow-sm text-center p-3 h-100">
             <div class="card-body p-0">
                 <i class="fas fa-chair text-warning fa-2x mb-2"></i>
-                <p class="small text-muted mb-1">Meja Terisi</p>
-                <h5 class="fw-bold mb-0">5/10</h5>
+                <p class="small text-muted mb-1">Meja Aktif</p>
+                <h5 class="fw-bold mb-0">{{ meja_terisi }}</h5>
             </div>
         </div>
     </div>
@@ -51,7 +83,7 @@
             <div class="card-body p-0">
                 <i class="fas fa-exclamation-triangle text-danger fa-2x mb-2"></i>
                 <p class="small text-muted mb-1">Stok Tipis</p>
-                <h5 class="fw-bold mb-0">3 Item</h5>
+                <h5 class="fw-bold mb-0">{{ stok_menipis }} Item</h5>
             </div>
         </div>
     </div>
@@ -86,12 +118,14 @@
             </div>
         </a>
 
+        {% if current_user.role in ('admin', 'owner') %}
         <a href="{{ url_for('produk.list_produk') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
             <div class="d-flex w-100 justify-content-between align-items-center">
                 <span><i class="fas fa-boxes me-3 text-info"></i>Manajemen Produk</span>
                 <i class="fas fa-chevron-right small text-muted"></i>
             </div>
         </a>
+        {% endif %}
 
         <a href="{{ url_for('penjualan.riwayat_penjualan') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
             <div class="d-flex w-100 justify-content-between align-items-center">
@@ -101,12 +135,21 @@
             </div>    
         </a>
 
-        <a href="{{ url_for('laporan.laporan_harian') }}" class="list-group-item list-group-item-action py-3 border-0">
+        {% if current_user.role in ('admin', 'owner') %}
+        <a href="{{ url_for('laporan.laporan_harian') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
             <div class="d-flex w-100 justify-content-between align-items-center">
                 <span><i class="fas fa-file-alt me-3 text-success"></i>Laporan Penjualan</span>
                 <i class="fas fa-chevron-right small text-muted"></i>
             </div>
         </a>
+
+        <a href="{{ url_for('pengaturan.pengaturan_list') }}" class="list-group-item list-group-item-action py-3 border-0">
+            <div class="d-flex w-100 justify-content-between align-items-center">
+                <span><i class="fas fa-cog me-3 text-secondary"></i>Pengaturan</span>
+                <i class="fas fa-chevron-right small text-muted"></i>
+            </div>
+        </a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

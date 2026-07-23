@@ -46,6 +46,7 @@
 
     <table>
         <tr><td>TOTAL</td><td align="right">Rp {{ "{:,}".format(t.total_bayar) }}</td></tr>
+        <tr><td>METODE</td><td align="right">{{ t.metode_bayar or 'Tunai' }}</td></tr>
         <tr><td>BAYAR</td><td align="right">Rp {{ "{:,}".format(t.bayar) }}</td></tr>
         <tr><td>KEMBALI</td><td align="right">Rp {{ "{:,}".format(t.kembalian) }}</td></tr>
     </table>

@@ -2,9 +2,10 @@
 from flask import Flask
 from flask_login import LoginManager
 from flask_migrate import Migrate
-from extensions import db, bcrypt
+from extensions import db, bcrypt, mail
 from models import User
 import os
+import atexit
 
 def create_app():
     app = Flask(__name__)
@@ -16,7 +17,12 @@ def create_app():
     # Inisialisasi Ekstensi
     db.init_app(app)
     bcrypt.init_app(app)
+    mail.init_app(app)
     migrate = Migrate(app, db)
+
+    # Backup otomatis database setiap kali aplikasi ditutup (Ctrl+C, restart, dll)
+    from utils import backup_database
+    atexit.register(backup_database)
 
     # Setup Flask-Login
     login_manager = LoginManager()
@@ -33,6 +39,12 @@ def create_app():
     from routers.penjualan_router import penjualan as penjualan_bp
     from routers.laporan_router import laporan as laporan_bp
     from routers.pengaturan_router import pengaturan as pengaturan_bp
+    from routers.bukukas_router import bukukas as bukukas_bp
+    from routers.bahanbaku_router import bahanbaku as bahanbaku_bp
+    from routers.resep_router import resep_bp
+    from routers.audit_router import audit_bp
+    from routers.shift_router import shift_bp
+    from routers.racikan_router import racikan_bp
 
     # Mendaftarkan blueprint dengan prefix jika diperlukan
     app.register_blueprint(user_bp)
@@ -40,6 +52,12 @@ def create_app():
     app.register_blueprint(penjualan_bp, url_prefix='/penjualan')
     app.register_blueprint(laporan_bp, url_prefix='/laporan')
     app.register_blueprint(pengaturan_bp, url_prefix='/pengaturan')
+    app.register_blueprint(bukukas_bp, url_prefix='/kas')
+    app.register_blueprint(bahanbaku_bp, url_prefix='/bahan-baku')
+    app.register_blueprint(resep_bp, url_prefix='/resep')
+    app.register_blueprint(audit_bp, url_prefix='/audit-log')
+    app.register_blueprint(shift_bp, url_prefix='/shift')
+    app.register_blueprint(racikan_bp, url_prefix='/racikan')
 
     return app
 

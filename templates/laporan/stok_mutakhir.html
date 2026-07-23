@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h4 class="fw-bold mb-3">Laporan Stok Mutakhir</h4>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Menu</th>
+                            <th>Kategori</th>
+                            <th class="text-center">Sisa Stok</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in daftar_stok %}
+                        {# PERBAIKAN: Gunakan nama relasi 'rekap_stok' sesuai model baru #}
+                        {% set stok_obj = p.rekap_stok if p.rekap_stok else None %}
+                        {% set total_stok = stok_obj.jumlah if stok_obj else 0 %}
+
+                        <tr>
+                            <td><strong>{{ p.nama_produk }}</strong></td>
+                            <td><span class="badge bg-light text-dark border">{{ p.kategori }}</span></td>
+                            <td class="text-center">
+                                <span class="fw-bold {% if total_stok < 5 %}text-danger{% else %}text-success{% endif %}">
+                                    {{ total_stok }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if total_stok <= 0 %}
+                                    <span class="badge bg-danger">Habis</span>
+                                {% elif total_stok < 10 %}
+                                    <span class="badge bg-warning text-dark">Menipis</span>
+                                {% else %}
+                                    <span class="badge bg-success">Aman</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

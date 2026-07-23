@@ -1,4 +1,4 @@
-from utils import parse_int, parse_bool, validate_enum, sanitize_string
+from utils import parse_int, parse_bool, validate_enum, sanitize_string, admin_required, catat_log
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models.produk_model import Produk, KategoriEnum
 from extensions import db
@@ -21,6 +21,7 @@ def allowed_file(filename):
 
 @produk.route('/', methods=['GET'])
 @login_required
+@admin_required
 def list_produk():
     search = request.args.get('q', '')
     kategori_filter = request.args.get('kategori', 'Semua')
@@ -37,15 +38,25 @@ def list_produk():
         if list_produk:
             produk_per_kategori[k.value] = list_produk
 
+    # Cek produk dengan stok menipis (untuk alert di halaman)
+    semua_produk_aktif = Produk.query.all()
+    produk_menipis = [
+        p for p in semua_produk_aktif
+        if (p.rekap_stok.jumlah if p.rekap_stok else 0) < BATAS_STOK_MENIPIS
+    ]
+
     return render_template('produk/list_produk.html', 
         produk_per_kategori=produk_per_kategori,
         search=search,
         kategori_filter=kategori_filter,
-        kategoris=['Semua'] + [k.value for k in KategoriEnum]
+        kategoris=['Semua'] + [k.value for k in KategoriEnum],
+        produk_menipis=produk_menipis,
+        batas_stok_menipis=BATAS_STOK_MENIPIS
     )
 
 @produk.route('/tambah', methods=['POST'])
 @login_required
+@admin_required
 def tambah_produk():
     print("\n>>> [DEBUG] Memulai proses tambah_produk...") # Indikator awal
     
@@ -101,6 +112,7 @@ def tambah_produk():
             # 6. Simpan Permanen (Source [2, 3])
             db.session.commit() 
             print(">>> [DEBUG] COMMIT BERHASIL! Data tersimpan di SQLite.")
+            catat_log('TAMBAH_PRODUK', f'Menambahkan produk "{nama}" (harga jual Rp{h_jual}).')
             flash(f'Produk {nama} berhasil disimpan!', 'success')
             
             print(f">>> [DEBUG] Data diterima: Nama={nama}, Kode={kode}, Stok={stok_awal}")           
@@ -116,9 +128,11 @@ def tambah_produk():
 # update edit_produk juga biar bisa ganti gambar
 @produk.route('/edit/<int:id>', methods=['POST'])
 @login_required
+@admin_required
 def edit_produk(id):
     produk = Produk.query.get_or_404(id)
     try:
+        harga_jual_lama = produk.harga_jual
         # 1. Update Data Dasar
         produk.nama_produk = request.form.get('nama_produk')
         produk.kategori = request.form.get('kategori')
@@ -135,6 +149,10 @@ def edit_produk(id):
             produk.gambar = filename
 
         db.session.commit()
+        deskripsi = f'Mengubah data produk "{produk.nama_produk}".'
+        if harga_jual_lama != produk.harga_jual:
+            deskripsi += f' Harga jual: Rp{harga_jual_lama:,} -> Rp{produk.harga_jual:,}.'.replace(',', '.')
+        catat_log('EDIT_PRODUK', deskripsi)
         flash(f'Produk {produk.nama_produk} berhasil diupdate!', 'success')
     except Exception as e:
         db.session.rollback()
@@ -144,6 +162,7 @@ def edit_produk(id):
 
 @produk.route('/hapus/<int:id>')
 @login_required
+@admin_required
 def hapus_produk(id):
     print(f"\n>>> [DEBUG] Memulai proses hapus_produk ID: {id}")
     
@@ -167,6 +186,7 @@ def hapus_produk(id):
         # FINAL COMMIT
         db.session.commit()
         print(">>> [DEBUG] COMMIT BERHASIL! Produk dan relasinya terhapus.")
+        catat_log('HAPUS_PRODUK', f'Menghapus produk "{nama_produk}".')
         flash(f'Produk {nama_produk} berhasil dihapus!', 'success')
 
     except Exception as e:
@@ -180,6 +200,7 @@ def hapus_produk(id):
 
 @produk.route('/restok', methods=['POST'])
 @login_required
+@admin_required
 def restok_produk():
     p_id = request.form.get('produk_id')
     qty_tambah = int(request.form.get('jumlah_tambah', 0))
@@ -196,9 +217,62 @@ def restok_produk():
         db.session.add(log)
         
         db.session.commit()
+        catat_log('RESTOK_PRODUK', f'Restok produk_id={p_id} sebanyak {qty_tambah} ({ket}).')
         flash('Stok berhasil diperbarui!', 'success')
     except Exception as e:
         db.session.rollback()
         flash(f'Gagal memperbarui stok: {str(e)}', 'danger')
     
     return redirect(url_for('produk.list_produk'))
+
+# Batas jumlah stok yang dianggap "menipis" dan perlu diwaspadai
+BATAS_STOK_MENIPIS = 5
+
+
+@produk.route('/riwayat')
+@login_required
+def riwayat_stok():
+    from datetime import datetime, date
+
+    produk_id_filter = request.args.get('produk_id', type=int)
+    tgl_str = request.args.get('tanggal', '')
+    search = request.args.get('q', '').strip()
+    page = request.args.get('page', 1, type=int)
+    per_page = 20
+
+    # 1. LOGIKA BARU: Cari data produk untuk menampilkan kartu "Stok Saat Ini"
+    produk_terpilih = None
+    if produk_id_filter:
+        # Mengambil objek produk berdasarkan ID filter agar template bisa akses p.stok.jumlah
+        produk_terpilih = Produk.query.get(produk_id_filter)
+
+    query = StokHarian.query
+    if produk_id_filter:
+        query = query.filter_by(produk_id=produk_id_filter)
+    if tgl_str:
+        try:
+            tgl = datetime.strptime(tgl_str, '%Y-%m-%d').date()
+            query = query.filter(db.func.date(StokHarian.tanggal) == tgl)
+        except ValueError:
+            tgl_str = ''
+    if search:
+        query = query.join(Produk, StokHarian.produk_id == Produk.id, isouter=True).filter(
+            db.or_(
+                StokHarian.keterangan.ilike(f'%{search}%'),
+                Produk.nama_produk.ilike(f'%{search}%')
+            )
+        )
+
+    pagination = query.order_by(StokHarian.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    riwayat = pagination.items
+    semua_produk = Produk.query.order_by(Produk.nama_produk).all()
+
+    # 2. KIRIMKAN variabel 'produk_terpilih' ke template
+    return render_template('produk/riwayat_stok.html',
+                           riwayat=riwayat,
+                           pagination=pagination,
+                           search=search,
+                           semua_produk=semua_produk,
+                           produk_id_filter=produk_id_filter,
+                           tanggal=tgl_str,
+                           produk_terpilih=produk_terpilih) # <-- Tambahkan ini

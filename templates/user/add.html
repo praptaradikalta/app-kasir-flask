@@ -1,9 +1,58 @@
-<!-- templates/user/add.html -->
-<form method="POST">
-    {{ form.hidden_tag() }}
-    {{ form.username.label }} {{ form.username() }}
-    {{ form.password.label }} {{ form.password() }}
-    {{ form.role.label }} {{ form.role() }}
-    {{ form.nama_lengkap.label }} {{ form.nama_lengkap() }}
-    {{ form.submit() }}
-</form>
+{% extends "base.html" %}
+
+{% block title %}Tambah User - Kasir UKM{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold mb-0">Tambah User Baru</h2>
+    <p class="text-muted mb-0">Buat akun baru untuk kasir, admin, atau owner.</p>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                {{ form.username.label(class="form-label fw-semibold") }}
+                {{ form.username(class="form-control", placeholder="Contoh: budi_kasir") }}
+                {% for error in form.username.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.email.label(class="form-label fw-semibold") }}
+                {{ form.email(class="form-control", placeholder="user@email.com (buat reset password)") }}
+                {% for error in form.email.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
+                <div class="form-text">Opsional, tapi wajib diisi kalau user ini mau bisa reset password sendiri lewat email.</div>
+            </div>
+
+            <div class="mb-3">
+                {{ form.password.label(class="form-label fw-semibold") }}
+                {{ form.password(class="form-control", placeholder="Minimal 6 karakter") }}
+                {% for error in form.password.errors %}
+                    <div class="text-danger small mt-1">{{ error }}</div>
+                {% endfor %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.nama_lengkap.label(class="form-label fw-semibold") }}
+                {{ form.nama_lengkap(class="form-control", placeholder="Nama lengkap (opsional)") }}
+            </div>
+
+            <div class="mb-4">
+                {{ form.role.label(class="form-label fw-semibold") }}
+                {{ form.role(class="form-select") }}
+            </div>
+
+            <div class="d-flex gap-2">
+                {{ form.submit(class="btn btn-primary px-4") }}
+                <a href="{{ url_for('user.user_list') }}" class="btn btn-outline-secondary px-4">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

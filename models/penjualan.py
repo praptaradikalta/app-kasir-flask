@@ -10,6 +10,7 @@ class Penjualan(db.Model):
     total_bayar = db.Column(db.Integer, nullable=False, default=0)
     bayar = db.Column(db.Integer, default=0) # Untuk mencatat uang tunai yang diterima
     kembalian = db.Column(db.Integer, default=0)
+    metode_bayar = db.Column(db.String(20), default='Tunai')  # 'Tunai' atau 'QRIS'
     
     # Foreign Keys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)

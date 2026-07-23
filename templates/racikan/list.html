@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Racikan & Semi Jadi - Kasir UKM{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h2 class="fw-bold mb-0">Racikan &amp; Semi Jadi</h2>
+        <p class="text-muted mb-0">Komponen olahan sendiri (kuah, toping, dll) yang dipakai di banyak menu.</p>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahRacikan">
+        <i class="fas fa-plus me-2"></i>Tambah Racikan
+    </button>
+</div>
+
+<div class="alert alert-light border d-flex justify-content-between align-items-center mb-4 py-2">
+    <span class="small"><i class="fas fa-carrot me-1 text-success"></i>Racikan dibuat dari bahan baku mentah.</span>
+    <a href="{{ url_for('bahanbaku.list_bahan') }}" class="btn btn-sm btn-outline-success">
+        <i class="fas fa-arrow-right me-1"></i>Kelola Bahan Baku
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Nama Racikan</th>
+                    <th>Hasil per Batch</th>
+                    <th class="text-end">HPP per Satuan</th>
+                    <th class="text-end">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in semua_racikan %}
+                <tr>
+                    <td class="fw-semibold">{{ r.nama_racikan }}</td>
+                    <td>{{ r.porsi_hasil }} {{ r.satuan_hasil }}</td>
+                    <td class="text-end fw-bold text-primary">Rp {{ "{:,.0f}".format(r.harga_per_porsi).replace(',', '.') }} / {{ r.satuan_hasil }}</td>
+                    <td class="text-end">
+                        <a href="{{ url_for('racikan.kelola_resep_racikan', racikan_id=r.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-flask"></i> Atur Resep
+                        </a>
+                        <a href="{{ url_for('racikan.hapus_racikan', id=r.id) }}" class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Hapus racikan {{ r.nama_racikan }}?');">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">Belum ada racikan/semi jadi.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Tambah -->
+<div class="modal fade" id="modalTambahRacikan" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('racikan.tambah_racikan') }}">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold">Tambah Racikan Baru</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small">Nama Racikan</label>
+                        <input type="text" name="nama_racikan" class="form-control" placeholder="Contoh: Kuah Miso, Toping Semur, Bakwan" required>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label small">Satuan Hasil</label>
+                        <input type="text" name="satuan_hasil" class="form-control" placeholder="porsi, mangkuk, sdm, dll" value="porsi">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Simpan &amp; Atur Resep</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

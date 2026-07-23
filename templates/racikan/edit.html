@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Resep Racikan: {{ racikan.nama_racikan }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold mb-0">Resep Racikan: {{ racikan.nama_racikan }}</h2>
+    <p class="text-muted mb-0">Atur bahan baku yang dipakai supaya HPP racikan ini terhitung otomatis.</p>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body p-4 text-center">
+        <div class="text-muted small">HPP Saat Ini</div>
+        <div class="fs-4 fw-bold text-primary">Rp {{ "{:,.0f}".format(racikan.harga_per_porsi).replace(',', '.') }} / {{ racikan.satuan_hasil }}</div>
+    </div>
+</div>
+
+<form method="POST" id="form-resep-racikan">
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Satu batch menghasilkan berapa?</label>
+                    <input type="number" name="porsi_hasil" class="form-control" value="{{ racikan.porsi_hasil }}" min="1" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Satuan hasil</label>
+                    <input type="text" name="satuan_hasil" class="form-control" value="{{ racikan.satuan_hasil }}" placeholder="porsi, mangkuk, sdm">
+                </div>
+            </div>
+            <div class="form-text mt-2">Contoh: kalau 1 panci Kuah Miso jadi 20 porsi mangkok, isi 20 di "menghasilkan" dan "porsi" di satuan.</div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body p-4">
+            <h6 class="fw-bold mb-3">Bahan yang Dipakai</h6>
+
+            <div id="daftar-bahan">
+                {% for d in racikan.detail %}
+                <div class="row g-2 mb-2 align-items-center baris-bahan">
+                    <div class="col-6">
+                        <select name="bahan_id[]" class="form-select">
+                            <option value="">- Pilih Bahan -</option>
+                            {% for b in semua_bahan %}
+                            <option value="{{ b.id }}" {% if b.id == d.bahan_id %}selected{% endif %}>
+                                {{ b.nama_bahan }} (Rp {{ "{:,.0f}".format(b.harga_beli_terakhir).replace(',', '.') }}/{{ b.satuan }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <input type="number" step="0.01" name="qty_pakai[]" class="form-control" value="{{ d.qty_pakai }}" placeholder="Jumlah dipakai">
+                    </div>
+                    <div class="col-2">
+                        <button type="button" class="btn btn-outline-danger btn-sm w-100 hapus-baris"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" id="tambah-baris" class="btn btn-outline-primary btn-sm mt-2">
+                <i class="fas fa-plus me-1"></i>Tambah Bahan
+            </button>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary px-4">Simpan &amp; Hitung Ulang HPP</button>
+        <a href="{{ url_for('racikan.list_racikan') }}" class="btn btn-outline-secondary px-4">Kembali</a>
+    </div>
+</form>
+
+<template id="template-baris-bahan">
+    <div class="row g-2 mb-2 align-items-center baris-bahan">
+        <div class="col-6">
+            <select name="bahan_id[]" class="form-select">
+                <option value="">- Pilih Bahan -</option>
+                {% for b in semua_bahan %}
+                <option value="{{ b.id }}">{{ b.nama_bahan }} (Rp {{ "{:,.0f}".format(b.harga_beli_terakhir).replace(',', '.') }}/{{ b.satuan }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-4">
+            <input type="number" step="0.01" name="qty_pakai[]" class="form-control" placeholder="Jumlah dipakai">
+        </div>
+        <div class="col-2">
+            <button type="button" class="btn btn-outline-danger btn-sm w-100 hapus-baris"><i class="fas fa-trash"></i></button>
+        </div>
+    </div>
+</template>
+
+<script>
+document.getElementById('tambah-baris').addEventListener('click', () => {
+    const tpl = document.getElementById('template-baris-bahan');
+    const clone = tpl.content.cloneNode(true);
+    document.getElementById('daftar-bahan').appendChild(clone);
+});
+
+document.getElementById('daftar-bahan').addEventListener('click', (e) => {
+    if (e.target.closest('.hapus-baris')) {
+        e.target.closest('.baris-bahan').remove();
+    }
+});
+</script>
+{% endblock %}

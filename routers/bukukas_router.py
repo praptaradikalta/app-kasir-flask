@@ -55,6 +55,12 @@ def bukukas_add():
             flash('Jumlah harus lebih dari 0.', 'danger')
             return redirect(url_for('bukukas.bukukas_add'))
 
+        # validasi jenis transaksi di router
+        jenis = request.form.get('jenis')
+        if not jenis:
+            flash('Anda harus memilih jenis transaksi (Masuk/Keluar)!', 'danger')
+            return redirect(url_for('bukukas.bukukas_add'))
+
         if not keterangan:
             flash('Keterangan wajib diisi.', 'danger')
             return redirect(url_for('bukukas.bukukas_add'))

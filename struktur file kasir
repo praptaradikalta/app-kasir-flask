@@ -1,24 +1,88 @@
-/project
-    /app.py
-    /models
-        __init__.py
-        user.py
-    /routes
-        __init__.py
-        user.py
-    /templates
-        base.html
-        user
-            list.html
-            add.html
-            edit.html
-    /static
-        css
-        js
-    /forms
-        __init__.py
-        user.py
-    /instance
-        kasir.db
-    config.py
-    requirements.txt
+KASIR_FLASK/
+├── app.py
+├── config.py
+├── extensions.py
+├── init_db.py
+├── utils.py
+├── requirements.txt
+├── README.md
+├── .gitignore
+├── instance/               # Database (kasir.db) & Backups
+├── migrations/             # Database migrations history
+├── models/                 # Definisi Tabel Database (SQLAlchemy) [2]
+│   ├── __init__.py
+│   ├── audit_log.py
+│   ├── bahanbaku.py
+│   ├── bukukas.py
+│   ├── customer.py
+│   ├── hutang_supplier.py
+│   ├── meja_penjualan.py
+│   ├── meja.py
+│   ├── pengaturan_model.py
+│   ├── penjualan_detail.py
+│   ├── penjualan.py
+│   ├── produk_model.py
+│   ├── racikan.py
+│   ├── resep_detail.py
+│   ├── resep.py
+│   ├── shift.py
+│   ├── stok_harian_model.py
+│   ├── stok.py
+│   └── user_model.py
+├── routers/                # Logika Blueprint/Routing [4]
+│   ├── audit_router.py
+│   ├── bahanbaku_router.py
+│   ├── bukukas_router.py
+│   ├── laporan_router.py
+│   ├── pengaturan_router.py
+│   ├── penjualan_router.py
+│   ├── produk_router.py
+│   ├── racikan_router.py
+│   ├── resep_router.py
+│   ├── shift_router.py
+│   └── user_router.py
+├── static/                 # Aset Frontend [4]
+│   ├── css/
+│   ├── img/
+│   ├── js/
+│   └── uploads/
+│       └── produk/         # Foto Produk (misop_suwir.jpeg, dll)
+└── templates/              # File HTML (Jinja2) [1, 3]
+    ├── audit/
+    │   └── list.html
+    ├── bahanbaku/
+    │   └── list.html
+    ├── bukukas/
+    │   ├── add.html
+    │   └── list.html
+    ├── laporan/
+    │   ├── harian.html
+    │   └── stok_mutakhir.html
+    ├── penjualan/
+    │   ├── antrean_dapur.html
+    │   ├── antrean_pengerjaan.html
+    │   ├── cetak_nota.html
+    │   ├── kasir.html
+    │   ├── riwayat.html
+    │   └── tagihan.html
+    ├── produk/
+    │   ├── add_produk.html
+    │   ├── edit_produk.html
+    │   ├── list_produk.html
+    │   └── riwayat_stok.html
+    ├── racikan/
+    │   ├── edit.html
+    │   └── list.html
+    ├── resep/
+    │   └── edit.html
+    ├── shift/
+    │   └── status.html
+    ├── user/
+    │   ├── add.html
+    │   ├── edit.html
+    │   └── list.html
+    ├── base.html           # Layout Utama
+    ├── dashboard.html
+    ├── login.html
+    ├── forgot_password.html
+    └── reset_password.html

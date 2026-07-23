@@ -3,8 +3,12 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required
 from extensions import db
 from models import Pengaturan
+<<<<<<< HEAD
 from utils import admin_required, catat_log, backup_database
 import os
+=======
+from utils import admin_required, catat_log
+>>>>>>> ef392eb475aeb7cf51c9ed4db01c7a5cfcc6e3af
 
 pengaturan = Blueprint('pengaturan', __name__)
 
@@ -34,6 +38,7 @@ def pengaturan_list():
         flash('Pengaturan berhasil disimpan!', 'success')
         return redirect(url_for('pengaturan.pengaturan_list'))
 
+<<<<<<< HEAD
     # Daftar backup yang udah ada, buat ditampilkan di halaman
     backup_dir = os.path.join('instance', 'backups')
     daftar_backup = []
@@ -57,3 +62,6 @@ def backup_sekarang():
     catat_log('BACKUP_MANUAL', 'Backup database dijalankan manual dari halaman Pengaturan.')
     flash('Backup database berhasil dibuat! Cek folder instance/backups/.', 'success')
     return redirect(url_for('pengaturan.pengaturan_list'))
+=======
+    return render_template('pengaturan.html', settings=settings)
+>>>>>>> ef392eb475aeb7cf51c9ed4db01c7a5cfcc6e3af

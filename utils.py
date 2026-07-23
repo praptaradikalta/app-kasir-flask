@@ -1,10 +1,14 @@
 # utils.py
 import bcrypt
+<<<<<<< HEAD
 import os
+=======
+>>>>>>> ef392eb475aeb7cf51c9ed4db01c7a5cfcc6e3af
 from functools import wraps
 from flask import flash, redirect, url_for
 from flask_login import current_user
 
+<<<<<<< HEAD
 def backup_database():
     """
     Backup database SQLite ke folder instance/backups/. Satu file per HARI --
@@ -44,6 +48,8 @@ def backup_database():
         print(f">>> [BACKUP ERROR] Gagal backup database: {e}")
 
 
+=======
+>>>>>>> ef392eb475aeb7cf51c9ed4db01c7a5cfcc6e3af
 def admin_required(f):
     """Batasi akses rute hanya untuk role admin/owner. Kasir akan ditolak."""
     @wraps(f)

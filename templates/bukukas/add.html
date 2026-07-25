@@ -12,15 +12,15 @@
     <div class="card-body p-4">
         <form method="POST">
             <div class="mb-3">
-                <label class="form-label fw-semibold">Jenis</label>
+                <label class="form-label fw-semibold">Jenis <span class="text-danger">*</span></label>
                 <div class="d-flex gap-2">
-                    <label class="btn btn-outline-success flex-fill">
-                        <input type="radio" name="jenis" value="masuk" class="d-none" checked> Kas Masuk
-                    </label>
-                    <label class="btn btn-outline-danger flex-fill">
-                        <input type="radio" name="jenis" value="keluar" class="d-none"> Kas Keluar
-                    </label>
+                    <input type="radio" class="btn-check" name="jenis" id="jenis-masuk" value="masuk" required>
+                    <label class="btn btn-outline-success flex-fill" for="jenis-masuk">Kas Masuk</label>
+
+                    <input type="radio" class="btn-check" name="jenis" id="jenis-keluar" value="keluar" required>
+                    <label class="btn btn-outline-danger flex-fill" for="jenis-keluar">Kas Keluar</label>
                 </div>
+                <div class="form-text">Wajib dipilih salah satu -- gak ada default, biar gak kepilih otomatis kalau lupa.</div>
             </div>
 
             <div class="mb-3">
@@ -40,19 +40,4 @@
         </form>
     </div>
 </div>
-
-<script>
-// Highlight tombol radio yang dipilih
-document.querySelectorAll('input[name="jenis"]').forEach(radio => {
-    radio.addEventListener('change', () => {
-        document.querySelectorAll('input[name="jenis"]').forEach(r => {
-            r.closest('label').classList.remove('btn-success', 'btn-danger');
-            r.closest('label').classList.add(r.value === 'masuk' ? 'btn-outline-success' : 'btn-outline-danger');
-        });
-        const checked = document.querySelector('input[name="jenis"]:checked');
-        checked.closest('label').classList.remove('btn-outline-success', 'btn-outline-danger');
-        checked.closest('label').classList.add(checked.value === 'masuk' ? 'btn-success' : 'btn-danger');
-    });
-});
-</script>
 {% endblock %}

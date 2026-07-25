@@ -3,98 +3,139 @@
 {% block title %}Buku Kas - Kasir UKM{% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="flex items-center justify-between mb-6">
     <div>
-        <h2 class="fw-bold mb-0">Buku Kas</h2>
-        <p class="text-muted mb-0">Alur kas masuk & keluar harian.</p>
+        <h1 class="text-3xl font-bold mb-1">Buku Kas</h1>
+        <p class="text-gray-600 text-sm">Alur kas masuk & keluar harian (rentang tanggal).</p>
     </div>
-    <a href="{{ url_for('bukukas.bukukas_add') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i>Catat Kas
+
+    <!-- Tambahkan di dekat form filter atau header -->
+    
+    <a href="{{ url_for('bukukas.bukukas_add') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded shadow">
+        <i class="fas fa-plus mr-2"></i>Catat Kas
     </a>
 </div>
 
-<!-- Filter Tanggal -->
-<form method="GET" class="d-flex gap-2 mb-3">
-    <input type="date" name="tanggal" value="{{ tanggal }}" class="form-control" style="max-width: 200px;" onchange="this.form.submit()">
+<!-- Filter Rentang Tanggal -->
+<form method="GET" class="flex flex-wrap gap-4 mb-4 items-center">
+    <div class="flex items-center space-x-2">
+        <label for="tanggal_mulai" class="text-gray-700 font-medium">Dari</label>
+        <input type="date" name="tanggal_mulai" id="tanggal_mulai"
+               value="{{ tanggal_mulai }}" class="border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+               onchange="this.form.submit()">
+    </div>
+
+    <div class="flex items-center space-x-2">
+        <label for="tanggal_selesai" class="text-gray-700 font-medium">Sampai</label>
+        <input type="date" name="tanggal_selesai" id="tanggal_selesai"
+               value="{{ tanggal_selesai }}" class="border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+               onchange="this.form.submit()">
+    </div>
+
+    <button type="submit" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-1 px-4 rounded shadow">Terapkan</button>
+
+    <a href="{{ url_for('bukukas.bukukas_export', tanggal_mulai=tanggal_mulai, tanggal_selesai=tanggal_selesai) }}"
+    class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow">
+    <i class="fas fa-file-excel mr-2"></i> Export Excel
+    </a>
 </form>
 
-<!-- Ringkasan -->
-<div class="row g-3 mb-4">
-    <div class="col-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body text-center py-3">
-                <div class="text-muted small">Kas Masuk</div>
-                <div class="fw-bold text-success">Rp {{ "{:,.0f}".format(total_masuk).replace(',', '.') }}</div>
-            </div>
-        </div>
+<!-- Keterangan Periode -->
+<div class="mb-2 text-gray-600 font-semibold">
+    Periode: <span class="text-gray-900">{{ tanggal_mulai }} &mdash; {{ tanggal_selesai }}</span>
+</div>
+
+<!-- Saldo Awal -->
+<div class="mb-6 max-w-xs bg-white rounded-lg shadow p-3 flex justify-between items-center">
+    <span class="text-gray-500 text-sm">Saldo Awal</span>
+    <span class="font-semibold text-lg">Rp {{ "{:,.0f}".format(saldo_awal or 0).replace(',', '.') }}</span>
+</div>
+
+<!-- Ringkasan Kas Masuk, Kas Keluar, Saldo Akhir -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
+    <div class="rounded-lg shadow p-2 flex justify-between items-center">
+        <div class="text-gray-500 text-sm mb-1">Kas Masuk</div>
+        <div class="text-green-600 font-bold text-xl">Rp {{ "{:,.0f}".format(total_masuk or 0).replace(',', '.') }}</div>
     </div>
-    <div class="col-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body text-center py-3">
-                <div class="text-muted small">Kas Keluar</div>
-                <div class="fw-bold text-danger">Rp {{ "{:,.0f}".format(total_keluar).replace(',', '.') }}</div>
-            </div>
-        </div>
+    <div class="rounded-lg shadow p-2 flex justify-between items-center">
+        <div class="text-gray-500 text-sm mb-1">Kas Keluar</div>
+        <div class="text-red-600 font-bold text-xl">Rp {{ "{:,.0f}".format(total_keluar or 0).replace(',', '.') }}</div>
     </div>
-    <div class="col-4">
-        <div class="card border-0 shadow-sm h-100 {% if saldo < 0 %}bg-danger-subtle{% else %}bg-primary-subtle{% endif %}">
-            <div class="card-body text-center py-3">
-                <div class="text-muted small">Saldo</div>
-                <div class="fw-bold">Rp {{ "{:,.0f}".format(saldo).replace(',', '.') }}</div>
-            </div>
-        </div>
+    <div class="rounded-lg shadow p-2 flex justify-between items-center" {% if saldo < 0 %}bg-red-50{% else %}bg-blue-50{% endif %}">
+        <div class="text-gray-500 text-sm mb-1">Saldo Akhir</div>
+        <div class="font-bold text-xl">Rp {{ "{:,.0f}".format(saldo or 0).replace(',', '.') }}</div>
     </div>
 </div>
 
 <!-- Daftar Transaksi -->
-<div class="card border-0 shadow-sm">
-    <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Jam</th>
-                    <th>Keterangan</th>
-                    <th>Dicatat oleh</th>
-                    <th class="text-end">Jumlah</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for e in entries %}
-                <tr>
-                    <td class="text-muted small">{{ e.tanggal.strftime('%H:%M') }}</td>
-                    <td>
-                        {{ e.keterangan }}
-                        {% if e.penjualan_id %}
-                            <span class="badge bg-light text-dark border ms-1">Otomatis</span>
+<div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tanggal</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Jam</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Keterangan</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Dicatat oleh</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Kas Masuk</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Kas Keluar</th>
+                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Saldo</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {% for e in entries %}
+            <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 text-sm text-gray-600">{{ e.tanggal.strftime('%d/%m/%Y') }}</td>
+                <td class="px-4 py-2 text-sm text-gray-600">{{ e.tanggal.strftime('%H:%M') }}</td>
+                <td class="px-4 py-2 text-sm text-gray-800">
+                    {{ e.keterangan }}
+                    {% if e.penjualan_id %}
+                        <span class="inline-block bg-gray-100 text-gray-700 border border-gray-300 rounded px-2 py-0.5 text-xs ml-1">Otomatis</span>
+                    {% endif %}
+                    {% if e.jenis == 'masuk' %}
+                        {% if e.metode_bayar == 'QRIS' %}
+                            <span class="inline-flex items-center bg-blue-100 text-blue-700 rounded px-2 py-0.5 text-xs ml-1">
+                                <i class="bi bi-qr-code-scan mr-1"></i> QRIS
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center bg-green-100 text-green-700 rounded px-2 py-0.5 text-xs ml-1">
+                                <i class="bi bi-cash-stack mr-1"></i> Tunai
+                            </span>
                         {% endif %}
-                        {% if e.jenis == 'masuk' %}
-                            {% if e.metode_bayar == 'QRIS' %}
-                                <span class="badge bg-primary ms-1"><i class="bi bi-qr-code-scan"></i> QRIS</span>
-                            {% else %}
-                                <span class="badge bg-success ms-1"><i class="bi bi-cash-stack"></i> Tunai</span>
-                            {% endif %}
-                        {% endif %}
-                    </td>
-                    <td class="text-muted small">{{ e.user.username if e.user else '-' }}</td>
-                    <td class="text-end fw-semibold {% if e.jenis == 'masuk' %}text-success{% else %}text-danger{% endif %}">
-                        {{ '+' if e.jenis == 'masuk' else '-' }} Rp {{ "{:,.0f}".format(e.jumlah).replace(',', '.') }}
-                        {% if not e.penjualan_id %}
-                        <a href="{{ url_for('bukukas.bukukas_delete', id=e.id) }}"
-                           class="text-muted ms-2"
-                           onclick="return confirm('Hapus catatan kas ini?');"
-                           title="Hapus">
-                            <i class="fas fa-trash small"></i>
-                        </a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="4" class="text-center text-muted py-4">Belum ada catatan kas di tanggal ini.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-2 text-sm text-gray-600">{{ e.user.username if e.user else '-' }}</td>
+                <td class="px-4 py-2 text-sm font-semibold text-green-600 text-right">
+                    {% if e.jenis == 'masuk' %}
+                        + Rp {{ "{:,.0f}".format(e.jumlah or 0).replace(',', '.') }}
+                    {% else %}
+                        &nbsp;
+                    {% endif %}
+                </td>
+                <td class="px-4 py-2 text-sm font-semibold text-red-600 text-right">
+                    {% if e.jenis == 'keluar' %}
+                        - Rp {{ "{:,.0f}".format(e.jumlah or 0).replace(',', '.') }}
+                    {% else %}
+                        &nbsp;
+                    {% endif %}
+                </td>
+                <td class="px-4 py-2 text-sm font-bold text-gray-900 text-right">
+                    Rp {{ "{:,.0f}".format(e.running_saldo or 0).replace(',', '.') }}
+                    {% if not e.penjualan_id %}
+                    <a href="{{ url_for('bukukas.bukukas_delete', id=e.id) }}"
+                       class="text-gray-400 hover:text-red-600 ml-2"
+                       onclick="return confirm('Hapus catatan kas ini?');"
+                       title="Hapus">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="px-4 py-6 text-center text-gray-400">Belum ada catatan kas di periode ini.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

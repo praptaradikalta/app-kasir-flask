@@ -10,6 +10,13 @@
                 <div class="card-body">
                     <h5 class="fw-bold mb-3">Daftar Menu</h5>
 
+                    <!-- Kotak pencarian: nyaring lintas semua kategori sekaligus -->
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="cari-menu" class="form-control border-start-0"
+                               placeholder="Cari menu..." oninput="filterMenu()">
+                    </div>
+
                     <!-- Tab kategori: biar kasir gak perlu scroll panjang nyari menu, -->
                     <!-- terutama di HP -->
                     <ul class="nav nav-pills mb-3 flex-nowrap overflow-auto pb-1" id="kategoriTab" role="tablist">
@@ -32,7 +39,7 @@
                              id="pane-{{ kategori|replace(' ', '-') }}" role="tabpanel">
                             <div class="row row-cols-2 row-cols-lg-3 g-3">
                                 {% for p in list_produk %}
-                                <div class="col">
+                                <div class="col menu-item" data-nama="{{ p.nama_produk|lower }}">
                                     <div class="card h-100 border-0 shadow-sm text-center p-2">
                                         <img src="{{ url_for('static', filename='uploads/' + (p.gambar or 'default.png')) }}" 
                                              class="card-img-top rounded mx-auto" style="height: 100px; width: auto; object-fit: cover;">
@@ -51,6 +58,11 @@
                         </div>
                         {% endfor %}
                     </div>
+
+                    <!-- Muncul kalau hasil pencarian kosong -->
+                    <p id="pesan-kosong" class="text-center text-muted py-4 d-none">
+                        <i class="fas fa-magnifying-glass me-1"></i>Menu "<span id="kata-dicari"></span>" tidak ditemukan.
+                    </p>
                 </div>
             </div>
         </div>
@@ -173,6 +185,40 @@
 
 
     let cart = [];
+
+    // Cari menu lintas semua kategori sekaligus (bukan cuma di tab yang lagi aktif),
+    // biar gak perlu geser tab dulu atau scroll panjang.
+    function filterMenu() {
+        const keyword = document.getElementById('cari-menu').value.trim().toLowerCase();
+        const tabNav = document.getElementById('kategoriTab');
+        const semuaPane = document.querySelectorAll('.tab-pane');
+        const semuaItem = document.querySelectorAll('.menu-item');
+        const pesanKosong = document.getElementById('pesan-kosong');
+
+        if (keyword === '') {
+            // Balik ke tampilan tab biasa (cuma kategori yang aktif yang kelihatan)
+            tabNav.style.display = '';
+            semuaPane.forEach(p => p.style.display = '');
+            semuaItem.forEach(item => item.style.display = '');
+            pesanKosong.classList.add('d-none');
+            return;
+        }
+
+        // Mode pencarian: sembunyikan tab, tampilkan SEMUA kategori berbarengan
+        tabNav.style.display = 'none';
+        semuaPane.forEach(p => p.style.display = 'block');
+
+        let adaYangKetemu = false;
+        semuaItem.forEach(item => {
+            const nama = item.getAttribute('data-nama') || '';
+            const cocok = nama.includes(keyword);
+            item.style.display = cocok ? '' : 'none';
+            if (cocok) adaYangKetemu = true;
+        });
+
+        document.getElementById('kata-dicari').textContent = document.getElementById('cari-menu').value;
+        pesanKosong.classList.toggle('d-none', adaYangKetemu);
+    }
 
     function tambahKeKeranjang(id, nama, harga) {
         const emptyMsg = document.getElementById('empty-msg');

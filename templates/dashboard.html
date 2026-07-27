@@ -90,63 +90,145 @@
 </div>
 
 <!-- MENU AKSI CEPAT -->
-<div class="card border-0 shadow-sm overflow-hidden">
-    <div class="card-header bg-white py-3 border-0">
-        <h6 class="fw-bold mb-0"><i class="fas fa-bolt me-2 text-warning"></i>Aksi Cepat</h6>
+<div class="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+    <div class="px-3 py-4 border-b border-slate-200">
+        <h6 class="text-sm font-bold text-slate-900 flex items-center gap-2 mb-0">
+            <i class="fas fa-bolt text-amber-500"></i>
+            Aksi Cepat
+        </h6>
     </div>
-    <div class="list-group list-group-flush border-top">
-        <a href="{{ url_for('penjualan.index_kasir') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
-            <div class="d-flex w-100 justify-content-between align-items-center">
-                <span><i class="fas fa-cart-plus me-3 text-primary"></i>Buat Pesanan Baru</span>
-                <i class="fas fa-chevron-right small text-muted"></i>
+
+    <div class="divide-y divide-slate-200">
+        <!-- Buat Pesanan Baru -->
+        <a href="{{ url_for('penjualan.index_kasir') }}"
+           class="flex items-center justify-between px-4 py-3 bg-white hover:bg-slate-50 active:bg-slate-100 transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 flex items-center justify-center text-blue-600 shrink-0">
+                    <i class="fas fa-cart-plus text-base"></i>
+                </div>
+                <span class="text-[15px] font-semibold text-slate-800 leading-tight">
+                    Buat Pesanan Baru
+                </span>
+            </div>
+            <div class="flex items-center justify-end shrink-0">
+                <i class="fas fa-chevron-right text-xs text-slate-400"></i>
             </div>
         </a>
 
-        <!-- FITUR BARU: Antrean Dapur & Bar -->
-        <a href="{{ url_for('penjualan.antrean_pengerjaan') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom bg-light">
-            <div class="d-flex w-100 justify-content-between align-items-center">
-                <span><i class="bi bi-fire me-3 text-danger"></i>Antrean Produksi (Dapur/Bar)</span>
-                <span class="badge bg-danger rounded-pill">Status: Dapur</span>
+        <!-- Antrean Produksi -->
+        <a href="{{ url_for('penjualan.antrean_dapur') }}"
+           class="flex items-center justify-between px-4 py-3 bg-white hover:bg-slate-50 active:bg-slate-100 transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 flex items-center justify-center text-red-500 shrink-0">
+                    <i class="fas fa-fire text-base"></i>
+                </div>
+                <span class="text-[15px] font-semibold text-slate-800 leading-tight">
+                    Antrean Produksi (Dapur/Bar)
+                </span>
+            </div>
+
+            <div class="flex items-center justify-end shrink-0">
+                {% if nota_dapur > 0 %}
+                <span class="inline-flex items-center rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-black tracking-wide text-white">
+                    {{ nota_dapur }} NOTA
+                </span>
+                {% else %}
+                <span class="text-xs italic text-slate-400">
+                    Kosong
+                </span>
+                {% endif %}
             </div>
         </a>
 
-        <!-- FITUR BARU: Tagihan Meja (Belum Lunas) -->
-        <a href="{{ url_for('penjualan.daftar_tagihan') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
-            <div class="d-flex w-100 justify-content-between align-items-center">
-                <span><i class="bi bi-wallet2 me-3 text-success"></i>Daftar Tagihan Meja</span>
-                <span class="badge bg-warning text-dark rounded-pill">Belum Lunas</span>
+        <!-- Daftar Tagihan Meja -->
+        <a href="{{ url_for('penjualan.daftar_tagihan') }}"
+           class="flex items-center justify-between px-4 py-3 bg-white hover:bg-slate-50 active:bg-slate-100 transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 flex items-center justify-center text-amber-500 shrink-0">
+                    <i class="fas fa-wallet text-base"></i>
+                </div>
+                <span class="text-[15px] font-semibold text-slate-800 leading-tight">
+                    Daftar Tagihan Meja
+                </span>
+            </div>
+
+            <div class="flex items-center justify-end shrink-0">
+                {% if nota_tagihan > 0 %}
+                <span class="inline-flex items-center rounded-full bg-amber-400 px-2.5 py-1 text-[10px] font-black tracking-wide text-slate-900">
+                    {{ nota_tagihan }} MEJA
+                </span>
+                {% else %}
+                <span class="text-xs italic text-slate-400">
+                    Lunas
+                </span>
+                {% endif %}
             </div>
         </a>
 
         {% if current_user.role in ('admin', 'owner') %}
-        <a href="{{ url_for('produk.list_produk') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
-            <div class="d-flex w-100 justify-content-between align-items-center">
-                <span><i class="fas fa-boxes me-3 text-info"></i>Manajemen Produk</span>
-                <i class="fas fa-chevron-right small text-muted"></i>
+        <!-- Manajemen Produk -->
+        <a href="{{ url_for('produk.list_produk') }}"
+           class="flex items-center justify-between px-4 py-3 bg-white hover:bg-slate-50 active:bg-slate-100 transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 flex items-center justify-center text-sky-500 shrink-0">
+                    <i class="fas fa-boxes text-base"></i>
+                </div>
+                <span class="text-[15px] font-semibold text-slate-800 leading-tight">
+                    Manajemen Produk
+                </span>
+            </div>
+            <div class="flex items-center justify-end shrink-0">
+                <i class="fas fa-chevron-right text-xs text-slate-400"></i>
             </div>
         </a>
         {% endif %}
 
-        <a href="{{ url_for('penjualan.riwayat_penjualan') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
-            <div class="d-flex w-100 justify-content-between align-items-center">
-            <!-- Perhatikan perubahan bi bi- dan penambahan me-3 agar jarak teks rapi -->
-                <span><i class="bi bi-clock-history me-3 text-info"></i>Riwayat Transaksi</span>
-                <i class="bi bi-chevron-right small text-muted"></i>
-            </div>    
-        </a>
-
-        {% if current_user.role in ('admin', 'owner') %}
-        <a href="{{ url_for('laporan.laporan_harian') }}" class="list-group-item list-group-item-action py-3 border-0 border-bottom">
-            <div class="d-flex w-100 justify-content-between align-items-center">
-                <span><i class="fas fa-file-alt me-3 text-success"></i>Laporan Penjualan</span>
-                <i class="fas fa-chevron-right small text-muted"></i>
+        <!-- Riwayat Transaksi -->
+        <a href="{{ url_for('penjualan.riwayat_penjualan') }}"
+           class="flex items-center justify-between px-4 py-3 bg-white hover:bg-slate-50 active:bg-slate-100 transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 flex items-center justify-center text-cyan-500 shrink-0">
+                    <i class="bi bi-clock-history text-base"></i>
+                </div>
+                <span class="text-[15px] font-semibold text-slate-800 leading-tight">
+                    Riwayat Transaksi
+                </span>
+            </div>
+            <div class="flex items-center justify-end shrink-0">
+                <i class="bi bi-chevron-right text-xs text-slate-400"></i>
             </div>
         </a>
 
-        <a href="{{ url_for('pengaturan.pengaturan_list') }}" class="list-group-item list-group-item-action py-3 border-0">
-            <div class="d-flex w-100 justify-content-between align-items-center">
-                <span><i class="fas fa-cog me-3 text-secondary"></i>Pengaturan</span>
-                <i class="fas fa-chevron-right small text-muted"></i>
+        {% if current_user.role in ('admin', 'owner') %}
+        <!-- Laporan Penjualan -->
+        <a href="{{ url_for('laporan.laporan_harian') }}"
+           class="flex items-center justify-between px-4 py-3 bg-white hover:bg-slate-50 active:bg-slate-100 transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 flex items-center justify-center text-emerald-500 shrink-0">
+                    <i class="fas fa-file-alt text-base"></i>
+                </div>
+                <span class="text-[15px] font-semibold text-slate-800 leading-tight">
+                    Laporan Penjualan
+                </span>
+            </div>
+            <div class="flex items-center justify-end shrink-0">
+                <i class="fas fa-chevron-right text-xs text-slate-400"></i>
+            </div>
+        </a>
+
+        <!-- Pengaturan -->
+        <a href="{{ url_for('pengaturan.pengaturan_list') }}"
+           class="flex items-center justify-between px-4 py-3 bg-white hover:bg-slate-50 active:bg-slate-100 transition">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 flex items-center justify-center text-slate-500 shrink-0">
+                    <i class="fas fa-cog text-base"></i>
+                </div>
+                <span class="text-[15px] font-semibold text-slate-800 leading-tight">
+                    Pengaturan
+                </span>
+            </div>
+            <div class="flex items-center justify-end shrink-0">
+                <i class="fas fa-chevron-right text-xs text-slate-400"></i>
             </div>
         </a>
         {% endif %}

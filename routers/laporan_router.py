@@ -68,6 +68,7 @@ def laporan_harian():
     # transaksi terjadi), karena aplikasi belum menyimpan snapshot HPP per nota.
     rincian_raw = db.session.query(
         Produk.nama_produk,
+        Produk.kategori,
         PenjualanDetail.varian,
         func.sum(PenjualanDetail.qty).label('total_qty'),
         func.sum(PenjualanDetail.qty * PenjualanDetail.harga_satuan).label('omzet'),
@@ -78,11 +79,12 @@ def laporan_harian():
          func.date(Penjualan.tanggal).between(dari, sampai),
          Penjualan.status == 'Lunas'
      )\
-     .group_by(Produk.nama_produk, PenjualanDetail.varian, Produk.harga_beli)\
+     .group_by(Produk.nama_produk, Produk.kategori, PenjualanDetail.varian, Produk.harga_beli)\
      .order_by(func.sum(PenjualanDetail.qty * PenjualanDetail.harga_satuan).desc())\
      .all()
 
     rincian = []
+    rekap_per_kategori = {}
     total_hpp = 0
     total_laba = 0
     for r in rincian_raw:
@@ -90,14 +92,16 @@ def laporan_harian():
         laba = r.omzet - hpp_total
         total_hpp += hpp_total
         total_laba += laba
-        rincian.append({
+        item = {
             'nama_produk': r.nama_produk,
             'varian': r.varian,
             'total_qty': r.total_qty,
             'omzet': r.omzet,
             'hpp_total': hpp_total,
             'laba': laba,
-        })
+        }
+        rincian.append(item)
+        rekap_per_kategori.setdefault(r.kategori, []).append(item)
 
     # --- Rekap khusus semua varian Mie, per transaksi (bukan gabungan) ---
     # Beda dari tabel "Rincian Penjualan Menu" di atas yang digabung per menu+varian,
@@ -131,6 +135,7 @@ def laporan_harian():
     return render_template('laporan/harian.html',
                            ringkasan=ringkasan,
                            rincian=rincian,
+                           rekap_per_kategori=rekap_per_kategori,
                            total_hpp=total_hpp,
                            total_laba=total_laba,
                            rekap_mie=rekap_mie,

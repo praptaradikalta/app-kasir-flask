@@ -97,6 +97,14 @@ def dashboard():
 
     hari_ini = date.today()
 
+
+    # Menghitung jumlah NOTA (transaksi) aktif di dapur
+    # Karena satu baris di tabel Penjualan adalah satu nota. [3]
+    nota_dapur = Penjualan.query.filter_by(status='Dapur').count()
+    
+    # Menghitung jumlah NOTA yang belum dibayar pelanggan
+    nota_tagihan = Penjualan.query.filter_by(status='Belum Lunas').count()
+
     # Pendapatan & jumlah transaksi HARI INI (cuma yang beneran udah Lunas)
     ringkasan_hari_ini = db.session.query(
         func.sum(Penjualan.total_bayar).label('total_pendapatan'),
@@ -138,6 +146,8 @@ def dashboard():
 
     return render_template('dashboard.html',
                            user=current_user,
+                           nota_dapur=nota_dapur, 
+                           nota_tagihan=nota_tagihan,
                            pendapatan_hari_ini=pendapatan_hari_ini,
                            transaksi_hari_ini=transaksi_hari_ini,
                            meja_terisi=meja_terisi,

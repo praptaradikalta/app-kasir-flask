@@ -102,6 +102,18 @@ def laporan_harian():
         }
         rincian.append(item)
         rekap_per_kategori.setdefault(r.kategori, []).append(item)
+    
+    # Query Agregasi: Kelompokkan per varian dan jumlahkan QTY
+    rekap_per_varian = db.session.query(
+        PenjualanDetail.varian,
+        func.sum(PenjualanDetail.qty).label('total_porsi')
+    ).join(Penjualan).filter(
+        func.date(Penjualan.tanggal).between(dari, sampai),
+        Penjualan.status == 'Lunas',
+        PenjualanDetail.varian.isnot(None),
+        PenjualanDetail.varian != '',
+        PenjualanDetail.varian != '-'
+    ).group_by(PenjualanDetail.varian).all()
 
     # --- Rekap khusus semua varian Mie, per transaksi (bukan gabungan) ---
     # Beda dari tabel "Rincian Penjualan Menu" di atas yang digabung per menu+varian,
@@ -118,7 +130,10 @@ def laporan_harian():
      .filter(
          func.date(Penjualan.tanggal).between(dari, sampai),
          Penjualan.status == 'Lunas',
-         Produk.nama_produk.ilike('%mie%')
+         PenjualanDetail.varian.ilike('%mie%'),
+         PenjualanDetail.varian.isnot(None),
+         PenjualanDetail.varian != '-',
+         PenjualanDetail.varian != ''
      )\
      .order_by(Penjualan.tanggal.desc())\
      .all()
@@ -135,6 +150,7 @@ def laporan_harian():
     return render_template('laporan/harian.html',
                            ringkasan=ringkasan,
                            rincian=rincian,
+                           rekap_per_varian=rekap_per_varian,
                            rekap_per_kategori=rekap_per_kategori,
                            total_hpp=total_hpp,
                            total_laba=total_laba,
